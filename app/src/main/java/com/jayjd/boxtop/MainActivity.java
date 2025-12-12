@@ -125,6 +125,24 @@ public class MainActivity extends AppCompatActivity {
             AppUtils.AppInfo appInfo = parent.getItem(position);
             AppUtils.launchApp(appInfo.getPackageName());
         });
+        allAppsGrid.setOnItemListener(new TvRecyclerView.OnItemListener() {
+            @Override
+            public void onItemPreSelected(TvRecyclerView parent, View itemView, int position) {
+                Log.d("MainActivity", "onItemPreSelected position = " + position);
+                ToolUtils.endAnimation(itemView);
+            }
+
+            @Override
+            public void onItemSelected(TvRecyclerView parent, View itemView, int position) {
+                Log.d("MainActivity", "onItemSelected position = " + position);
+                ToolUtils.startAnimation(itemView);
+            }
+
+            @Override
+            public void onItemClick(TvRecyclerView parent, View itemView, int position) {
+            }
+        });
+
         tvRecyclerView.setOnItemListener(new TvRecyclerView.OnItemListener() {
             @Override
             public void onItemPreSelected(TvRecyclerView parent, View itemView, int position) {
@@ -183,6 +201,7 @@ public class MainActivity extends AppCompatActivity {
         allAppsGrid.requestFocus();
         allAppsGrid.setSelectionWithSmooth(0);
         tvRecyclerView.setVisibility(View.GONE);
+        previewPanel.setVisibility(View.GONE);
     }
 
     private void showHomeApps() {
@@ -191,6 +210,7 @@ public class MainActivity extends AppCompatActivity {
         allAppsContainer.animate().alpha(1f).setDuration(200).start();
 
         // 全屏 Grid 自动获取焦点
+        previewPanel.setVisibility(View.VISIBLE);
         tvRecyclerView.setVisibility(View.VISIBLE);
         tvRecyclerView.requestFocus();
         tvRecyclerView.setSelectionWithSmooth(0);

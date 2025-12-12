@@ -5,6 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/wallpager"
     tools:context=".MainActivity">
 
     <LinearLayout
@@ -12,7 +13,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="RtlSymmetry">
@@ -113,7 +113,8 @@
     <FrameLayout
         android:id="@+id/all_apps_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_margin="16dp"
         android:background="@drawable/bg_blur_card"
         android:padding="16dp"
         android:visibility="gone"
@@ -126,6 +127,7 @@
             android:id="@+id/all_apps_grid"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:padding="16dp"
             app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
             app:spanCount="4"
             app:tv_horizontalSpacingWithMargins="8dp"
