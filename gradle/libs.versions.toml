@@ -1,0 +1,30 @@
+[versions]
+agp = "8.13.2"
+baserecyclerviewadapterhelper4 = "4.3.2"
+firebaseCrashlyticsBuildtools = "3.0.6"
+junit = "4.13.2"
+junitVersion = "1.3.0"
+espressoCore = "3.7.0"
+appcompat = "1.7.1"
+material = "1.13.0"
+activity = "1.12.1"
+constraintlayout = "2.2.1"
+tvRecyclerview = "3.0.0"
+utilcodex = "1.31.1"
+
+[libraries]
+baserecyclerviewadapterhelper4 = { module = "io.github.cymchad:BaseRecyclerViewAdapterHelper4", version.ref = "baserecyclerviewadapterhelper4" }
+firebase-crashlytics-buildtools = { module = "com.google.firebase:firebase-crashlytics-buildtools", version.ref = "firebaseCrashlyticsBuildtools" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+tv-recyclerview = { module = "com.owen:tv-recyclerview", version.ref = "tvRecyclerview" }
+utilcodex = { module = "com.blankj:utilcodex", version.ref = "utilcodex" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+
