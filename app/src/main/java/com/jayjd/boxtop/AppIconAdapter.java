@@ -21,8 +21,16 @@ public class AppIconAdapter extends BaseQuickAdapter<AppUtils.AppInfo, QuickView
     @Override
     protected void onBindViewHolder(@NonNull QuickViewHolder quickViewHolder, int i, @Nullable AppUtils.AppInfo appInfo) {
         if (appInfo != null) {
-            quickViewHolder.setImageDrawable(R.id.iv_icon, appInfo.getIcon());
-            quickViewHolder.setText(R.id.tv_name, appInfo.getName());
+            if (appInfo.getPackageName().isEmpty()) {
+                quickViewHolder.setGone(R.id.iv_icon, true);
+                quickViewHolder.setVisible(R.id.tv_name, false);
+                quickViewHolder.setGone(R.id.iv_add, false);
+            } else {
+                quickViewHolder.setGone(R.id.iv_icon, false);
+                quickViewHolder.setGone(R.id.tv_name, false);
+                quickViewHolder.setImageDrawable(R.id.iv_icon, appInfo.getIcon());
+                quickViewHolder.setText(R.id.tv_name, appInfo.getName());
+            }
         }
     }
 }
