@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import com.bumptech.glide.Glide;
 import com.chad.library.adapter4.BaseQuickAdapter;
 import com.chad.library.adapter4.viewholder.QuickViewHolder;
+import com.google.android.material.card.MaterialCardView;
 import com.jayjd.boxtop.R;
 import com.jayjd.boxtop.entity.AppInfo;
 
@@ -35,10 +36,11 @@ public class AppIconAdapter extends BaseQuickAdapter<AppInfo, QuickViewHolder> {
                     quickViewHolder.setVisible(R.id.tv_name, false);
                     quickViewHolder.setImageResource(R.id.iv_add, R.drawable.ic_add_24dp);
                 }
-
             } else {
                 quickViewHolder.setGone(R.id.iv_icon, false);
                 quickViewHolder.setGone(R.id.tv_name, false);
+                MaterialCardView cardView = quickViewHolder.getView(R.id.card);
+                cardView.setCardBackgroundColor(appInfo.getCardColor());
                 ImageView imageView = quickViewHolder.getView(R.id.iv_icon);
                 Glide.with(getContext()).load(appInfo.getIcon()).into(imageView);
                 quickViewHolder.setText(R.id.tv_name, appInfo.getName());

@@ -46,6 +46,7 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
 
+    implementation("androidx.palette:palette:1.0.0")
     //noinspection UseTomlInstead
     implementation("com.google.guava:guava:33.3.1-android")
     // https://mvnrepository.com/artifact/com.google.code.gson/gson

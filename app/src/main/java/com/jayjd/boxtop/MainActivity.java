@@ -1,15 +1,17 @@
 package com.jayjd.boxtop;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -25,6 +27,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.palette.graphics.Palette;
 
 import com.blankj.utilcode.util.AppUtils;
 import com.blankj.utilcode.util.ScreenUtils;
@@ -68,45 +71,6 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
     private List<AppInfo> allApps = new ArrayList<>();
     private List<AppInfo> systemApps = new ArrayList<>();
 
-    /**
-     * 带降级的图标加载
-     *
-     * @param pm      PackageManager
-     * @param appInfo 应用信息
-     * @return 图标 Drawable
-     */
-    @SuppressLint("UseCompatLoadingForDrawables")
-    public static Drawable getAppIconWithFallback(PackageManager pm, ApplicationInfo appInfo) {
-        Drawable icon = null;
-
-        // 优先级1: 尝试加载 Banner（TV 专用）
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            icon = appInfo.loadBanner(pm);
-        }
-
-        // 优先级2: 从元数据中获取 TV Banner
-        if (icon == null && appInfo.metaData != null) {
-            int tvBannerId = appInfo.metaData.getInt("com.google.android.tv.banner", 0);
-            if (tvBannerId != 0) {
-                try {
-                    icon = pm.getResourcesForApplication(appInfo).getDrawable(tvBannerId);
-                } catch (Exception ignored) {
-                }
-            }
-        }
-
-        // 优先级3: 尝试加载 Logo
-        if (icon == null) {
-            icon = appInfo.loadLogo(pm);
-        }
-
-        // 优先级4: 加载普通应用图标
-        if (icon == null) {
-            icon = appInfo.loadIcon(pm);
-        }
-
-        return icon;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,6 +106,10 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
                 AppIconAdapter dialogAppIconAdapter = new AppIconAdapter();
                 allDialogGrid.setAdapter(dialogAppIconAdapter);
                 dialogAppIconAdapter.setItems(systemApps);
+                dialogAppIconAdapter.setOnItemLongClickListener((baseQuickAdapter, view2, i) -> {
+                    Log.d("MainActivity", "onItemChildLongClick position = " + i);
+                    return showAppSettingsDialog(baseQuickAdapter, i);
+                });
                 dialogAppIconAdapter.setOnItemClickListener((baseQuickAdapter1, view1, i1) -> {
                     AppInfo item = baseQuickAdapter1.getItem(i1);
                     if (item.getPackageName().isEmpty()) {
@@ -241,41 +209,56 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         appListGrid.setAdapter(appListAdapter);
         favoriteAppsGrid.setAdapter(favoriteAppsAdapter);
 
-        List<AppInfo> tempAllApps = AppsUtils.getAppsInfo(this);
-
-        allApps = Lists.newArrayList(Iterables.filter(tempAllApps, appInfo -> {
-            if (appInfo != null) {
-                return !appInfo.isSystem();
-            }
-            return false;
-        }));
-        systemApps = Lists.newArrayList(Iterables.filter(tempAllApps, appInfo -> appInfo != null && appInfo.isSystem()));
-        Iterator<AppInfo> iterator = systemApps.iterator();
-        while (iterator.hasNext()) {
-            AppInfo next = iterator.next();
-            boolean appLaunchable = ToolUtils.isAppLaunchable(this, next.getPackageName());
-            if (!appLaunchable) {
-                iterator.remove();
-            }
-        }
-        getAllAppsBanner(allApps);
-        allApps.add(allApps.size(), ToolUtils.getEmptyAppInfo("system"));
-
-        favoriteApps.add(favoriteAppsAdapter.getItemCount(), ToolUtils.getEmptyAppInfo("add"));
         topSettingsAdapter.setItems(List.of(TopSettingsIcons.values()));
-        appListAdapter.setItems(allApps);
-        favoriteAppsAdapter.setItems(favoriteApps);
+
+        new Thread(() -> {
+            List<AppInfo> tempAllApps = AppsUtils.getAppsInfo(this);
+            getAllAppsBanner(tempAllApps);
+            allApps = Lists.newArrayList(Iterables.filter(tempAllApps, appInfo -> {
+                if (appInfo != null) {
+                    return !appInfo.isSystem();
+                }
+                return false;
+            }));
+            systemApps = Lists.newArrayList(Iterables.filter(tempAllApps, appInfo -> appInfo != null && appInfo.isSystem()));
+            Iterator<AppInfo> iterator = systemApps.iterator();
+            while (iterator.hasNext()) {
+                AppInfo next = iterator.next();
+                boolean appLaunchable = ToolUtils.isAppLaunchable(this, next.getPackageName());
+                if (!appLaunchable) {
+                    iterator.remove();
+                }
+            }
+            allApps.add(allApps.size(), ToolUtils.getEmptyAppInfo("system"));
+            favoriteApps.add(favoriteAppsAdapter.getItemCount(), ToolUtils.getEmptyAppInfo("add"));
+            Log.d(TAG, "initData: 数据处理完成");
+            new Handler(Looper.getMainLooper()).post(() -> {
+                Log.d(TAG, "initData: 更新UI");
+                appListAdapter.setItems(allApps);
+                appListAdapter.notifyDataSetChanged();
+                favoriteAppsAdapter.setItems(favoriteApps);
+                favoriteAppsAdapter.notifyDataSetChanged();
+                favoriteAppsGrid.requestFocus();
+//                favoriteAppsGrid.post(() -> {
+//                    favoriteAppsGrid.scrollToPosition(0);
+//                    RecyclerView.ViewHolder viewHolderForAdapterPosition = favoriteAppsGrid.findViewHolderForAdapterPosition(0);
+//                    if (viewHolderForAdapterPosition != null) {
+//                        viewHolderForAdapterPosition.itemView.requestFocus();
+//                    } else {
+//                        favoriteAppsGrid.requestFocus();
+//                    }
+//                });
+                Log.d(TAG, "initData: 更新UI完成");
+            });
+        }).start();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        // 使用 View.post() 确保在视图布局完成后执行焦点设置
-        favoriteAppsGrid.post(() -> {
-            // 1. 请求焦点（确保父容器和本身能获得焦点）
-            favoriteAppsGrid.requestFocus();
-            // 2. 设置选中项
-            favoriteAppsGrid.setSelectionWithSmooth(0);
+        allAppsContainer.post(() -> {
+            int screenHeight = ScreenUtils.getScreenHeight();
+            allAppsContainer.setTranslationY(screenHeight);
         });
     }
 
@@ -321,29 +304,6 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         }
     }
 
-    /**
-     * 检查当前应用是否设置为默认 Home 桌面。
-     * 此方法在 Android 5.0 及以上版本中兼容。
-     *
-     * @return true 如果是默认桌面，否则 false
-     */
-    private boolean isDefaultHome() {
-        // 1. 创建 Home 意图
-        Intent homeIntent = new Intent(Intent.ACTION_MAIN);
-        homeIntent.addCategory(Intent.CATEGORY_HOME);
-
-        // 2. 解析系统默认处理该意图的 Activity
-        // PackageManager.MATCH_DEFAULT_ONLY 确保只匹配可以被隐式启动的 Activity
-        ResolveInfo resolveInfo = getPackageManager().resolveActivity(homeIntent, PackageManager.MATCH_DEFAULT_ONLY);
-
-        // 3. 检查解析结果的包名是否与当前应用包名一致
-        if (resolveInfo != null && resolveInfo.activityInfo != null) {
-            String currentDefaultPackage = resolveInfo.activityInfo.packageName;
-            // getPackageName() 始终返回当前应用的包名
-            return currentDefaultPackage.equals(getPackageName());
-        }
-        return false;
-    }
 
     private boolean showAppSettingsDialog(BaseQuickAdapter<AppInfo, ?> parent, int position) {
         AppInfo appInfo = parent.getItem(position);
@@ -359,7 +319,18 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
                     } else if (which == 1) {
                         AppUtils.launchAppDetailsSettings(appInfo.getPackageName());
                     } else if (which == 2) {
-                        ToolUtils.startUninstallProcess(this, appInfo.getPackageName());
+                        if (appInfo.isSystem()) {
+                            Toast.makeText(this, "系统应用无法卸载", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        new MaterialAlertDialogBuilder(this)
+                                .setTitle("卸载应用")
+                                .setMessage("确定要卸载「" + appInfo.getName() + "」吗？")
+                                .setPositiveButton("卸载", (d, w) -> {
+                                    ToolUtils.uninstallApp(this, appInfo.getPackageName());
+                                })
+                                .setNegativeButton("取消", null)
+                                .show();
                     }
                 }).show();
         return true;
@@ -376,7 +347,12 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         AppInfo dialogAppInfo = baseQuickAdapter.getItem(i);
         List<AppInfo> items = topAppAdapter.getItems();
         if (!dialogAppInfo.getPackageName().isEmpty()) {
-            ArrayList<AppInfo> appInfos = Lists.newArrayList(Iterables.filter(items, appInfo -> appInfo.getPackageName().equals(dialogAppInfo.getPackageName())));
+            ArrayList<AppInfo> appInfos = Lists.newArrayList(Iterables.filter(items, appInfo -> {
+                if (appInfo != null) {
+                    return appInfo.getPackageName().equals(dialogAppInfo.getPackageName());
+                }
+                return false;
+            }));
             if (appInfos.isEmpty()) {
                 topAppAdapter.add(0, dialogAppInfo);
             } else {
@@ -386,17 +362,26 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
     }
 
     public void showMaterialAlertDialog(Context context, String titleName, View rootView) {
-        MaterialAlertDialogBuilder materialAlertDialogBuilder = new MaterialAlertDialogBuilder(context, R.style.CustomDialogTheme)
-                .setCustomTitle(initCustomTitle(context, titleName)).setView(rootView);
-        materialAlertDialogBuilder.show();
+        Dialog dialog = new Dialog(context, R.style.CustomDialogTheme);
+        dialog.setContentView(rootView);
+        dialog.show();
     }
 
     private void getAllAppsBanner(List<AppInfo> appsInfo) {
         for (AppInfo appInfo : appsInfo) {
-            Drawable banner = getTvAppIcon(this, appInfo.getPackageName());
+            Drawable banner = ToolUtils.getTvAppIcon(this, appInfo.getPackageName());
+            Drawable icon = banner != null ? banner : appInfo.getIcon();
+            if (icon == null) continue;
             if (banner != null) {
                 appInfo.setIcon(banner);
             }
+            Bitmap bitmap = ToolUtils.drawableToSmallBitmap(icon, 24);
+            if (bitmap == null) continue;
+            appInfo.setBitmapIcon(bitmap);
+            Palette generate = Palette.from(bitmap).generate();
+            int dominantColor = generate.getDominantColor(Color.parseColor("#263238"));
+            int normalizeColor = ToolUtils.normalizeColor(dominantColor);
+            appInfo.setCardColor(normalizeColor);
         }
     }
 
@@ -421,6 +406,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             previewPanel.setVisibility(View.GONE);
         topSettingsBar.setVisibility(View.GONE);
         int screenHeight = ScreenUtils.getScreenHeight();
+        Log.d(TAG, "showAllApps: " + screenHeight);
         favoriteAppsContainer.animate().translationY(-screenHeight).setDuration(500).start();
         allAppsContainer.animate().translationY(-screenHeight).setDuration(500).start();
         appListGrid.requestFocus();
@@ -436,28 +422,12 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         favoriteAppsGrid.setSelectionWithSmooth(0);
     }
 
-    /**
-     * 获取 Android TV 应用 Banner（Leanback 海报优先）
-     */
-    public static Drawable getTvAppIcon(Context context, String packageName) {
-        PackageManager pm = context.getPackageManager();
-
-        try {
-            // 获取应用信息
-            ApplicationInfo appInfo = pm.getApplicationInfo(packageName, 0);
-            return getAppIconWithFallback(pm, appInfo);
-
-        } catch (PackageManager.NameNotFoundException e) {
-            return pm.getDefaultActivityIcon(); // 返回默认图标
-        }
-    }
-
 
     private void initDefaleHome() {
-        boolean defaultHome = isDefaultHome();
+        boolean defaultHome = ToolUtils.isDefaultHome(this);
         Log.d("MainActivity", "defaultHome = " + defaultHome);
         if (!defaultHome) {
-            new MaterialAlertDialogBuilder(this)
+            new MaterialAlertDialogBuilder(this, R.style.CustomDialogTheme)
                     .setTitle("设置为默认桌面")
                     .setMessage("是否要设置为默认桌面？")
                     .setPositiveButton("是", (dialog, which) -> goToHomeSettings())
