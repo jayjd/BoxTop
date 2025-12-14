@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.motion.widget.MotionLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
@@ -17,7 +17,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
+    <!--顶部工具栏-->
     <LinearLayout
         android:id="@+id/top_tools_container"
         android:layout_width="wrap_content"
@@ -40,7 +40,7 @@
             app:tv_verticalSpacingWithMargins="8dp"
             tools:listitem="@layout/activity_settings_icon_item" />
     </LinearLayout>
-
+    <!--首页中间预览-->
     <FrameLayout
         android:id="@+id/preview_panel"
         android:layout_width="0dp"
@@ -48,7 +48,7 @@
         android:layout_marginHorizontal="40dp"
         android:background="@drawable/bg_blur_card"
         android:visibility="invisible"
-        app:layout_constraintBottom_toTopOf="@id/tv_recyclerview"
+        app:layout_constraintBottom_toTopOf="@id/favorite_apps_grid"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/top_tools_container">
@@ -91,20 +91,16 @@
             </LinearLayout>
         </LinearLayout>
     </FrameLayout>
-
-
+    <!--所有应用列表-->
     <FrameLayout
         android:id="@+id/all_apps_container"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:background="@drawable/bg_blur_card"
-        android:padding="16dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/favorite_apps_container">
 
         <com.owen.tvrecyclerview.widget.TvRecyclerView
             android:id="@+id/all_apps_grid"
@@ -118,23 +114,32 @@
             app:tv_verticalSpacingWithMargins="8dp"
             tools:listitem="@layout/activity_icon_item" />
     </FrameLayout>
-
-    <com.owen.tvrecyclerview.widget.TvRecyclerView
-        android:id="@+id/tv_recyclerview"
+    <!--常用软件列表-->
+    <FrameLayout
+        android:id="@+id/favorite_apps_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:background="@drawable/bg_blur_card"
-        android:orientation="horizontal"
+        android:layout_height="match_parent"
         android:padding="16dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:tv_horizontalSpacingWithMargins="8dp"
-        app:tv_isMemoryFocus="true"
-        app:tv_selectedItemIsCentered="true"
-        app:tv_verticalSpacingWithMargins="8dp"
-        tools:listitem="@layout/activity_icon_item" />
+        app:layout_constraintTop_toTopOf="parent">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <com.owen.tvrecyclerview.widget.TvRecyclerView
+            android:id="@+id/favorite_apps_grid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="@drawable/bg_blur_card"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:tv_horizontalSpacingWithMargins="8dp"
+            app:tv_isMemoryFocus="true"
+            app:tv_selectedItemIsCentered="true"
+            app:tv_verticalSpacingWithMargins="8dp"
+            tools:listitem="@layout/activity_icon_item" />
+    </FrameLayout>
+
+
+</androidx.constraintlayout.motion.widget.MotionLayout>

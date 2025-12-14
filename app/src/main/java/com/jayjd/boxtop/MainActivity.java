@@ -27,6 +27,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.blankj.utilcode.util.AppUtils;
+import com.blankj.utilcode.util.ScreenUtils;
 import com.bumptech.glide.Glide;
 import com.chad.library.adapter4.BaseQuickAdapter;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -37,6 +38,8 @@ import com.jayjd.boxtop.adapter.SettingsIconAdapter;
 import com.jayjd.boxtop.entity.AppInfo;
 import com.jayjd.boxtop.enums.TopSettingsIcons;
 import com.jayjd.boxtop.listeners.TvOnItemListener;
+import com.jayjd.boxtop.listeners.ViewAnimateListener;
+import com.jayjd.boxtop.listeners.ViewAnimationShake;
 import com.jayjd.boxtop.utils.AppsUtils;
 import com.jayjd.boxtop.utils.ToolUtils;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
@@ -47,13 +50,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ViewAnimateListener {
     private static final String TAG = "MainActivity";
     FrameLayout previewPanel;
     ImageView previewIcon;
     TextView previewTitle;
     TextView previewDesc;
     FrameLayout allAppsContainer;
+    FrameLayout favoriteAppsContainer;
     private final List<AppInfo> favoriteApps = new ArrayList<>();
     TvRecyclerView appListGrid;
     TvRecyclerView favoriteAppsGrid;
@@ -123,34 +127,6 @@ public class MainActivity extends AppCompatActivity {
     private void initListener() {
         topSettingsAdapter.setOnItemClickListener((baseQuickAdapter, view, i) -> {
 
-        });
-        appListGrid.setOnInBorderKeyEventListener((direction, focused) -> {
-            if (direction == View.FOCUS_LEFT) {
-                Log.d(TAG, "onInBorderKeyEvent: 左");
-            } else if (direction == View.FOCUS_RIGHT) {
-                Log.d(TAG, "onInBorderKeyEvent: 右");
-            } else if (direction == View.FOCUS_UP) {
-                Log.d(TAG, "onInBorderKeyEvent: 上");
-                showHomeApps();
-                return true;
-            } else if (direction == View.FOCUS_DOWN) {
-                Log.d(TAG, "onInBorderKeyEvent: 下");
-            }
-            return false;
-        });
-        favoriteAppsGrid.setOnInBorderKeyEventListener((direction, focused) -> {
-            if (direction == View.FOCUS_LEFT) {
-                Log.d(TAG, "onInBorderKeyEvent: 左");
-            } else if (direction == View.FOCUS_RIGHT) {
-                Log.d(TAG, "onInBorderKeyEvent: 右");
-            } else if (direction == View.FOCUS_UP) {
-                Log.d(TAG, "onInBorderKeyEvent: 上");
-            } else if (direction == View.FOCUS_DOWN) {
-                Log.d(TAG, "onInBorderKeyEvent: 下");
-                showAllApps();
-                return true;
-            }
-            return false;
         });
         appListAdapter.setOnItemLongClickListener((parent, view, position) -> {
             Log.d("MainActivity", "onItemChildLongClick position = " + position);
@@ -240,14 +216,19 @@ public class MainActivity extends AppCompatActivity {
         previewTitle = findViewById(R.id.preview_title);
         previewDesc = findViewById(R.id.preview_desc);
         // 常用的软件
-        favoriteAppsGrid = findViewById(R.id.tv_recyclerview);
+        favoriteAppsContainer = findViewById(R.id.favorite_apps_container);
+        favoriteAppsGrid = findViewById(R.id.favorite_apps_grid);
         // 所有软件的布局和列表
         allAppsContainer = findViewById(R.id.all_apps_container);
         appListGrid = findViewById(R.id.all_apps_grid);
 
         topSettingsBar.setLayoutManager(new V7LinearLayoutManager(this, V7LinearLayoutManager.HORIZONTAL, false));
+        topSettingsBar.setOnInBorderKeyEventListener(new ViewAnimationShake(topSettingsBar, this, 0, this));
         favoriteAppsGrid.setLayoutManager(new V7LinearLayoutManager(this, V7LinearLayoutManager.HORIZONTAL, false));
+        favoriteAppsGrid.setOnInBorderKeyEventListener(new ViewAnimationShake(favoriteAppsGrid, this, 1, this));
         appListGrid.setLayoutManager(new V7GridLayoutManager(this, 4));
+        appListGrid.setOnInBorderKeyEventListener(new ViewAnimationShake(appListGrid, this, 2, this));
+
         favoriteAppsGrid.getBackground().mutate().setAlpha(128);
     }
 
@@ -289,13 +270,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-//        // 使用 View.post() 确保在视图布局完成后执行焦点设置
-//        favoriteAppsGrid.post(() -> {
-//            // 1. 请求焦点（确保父容器和本身能获得焦点）
-//            favoriteAppsGrid.requestFocus();
-//            // 2. 设置选中项
-//            favoriteAppsGrid.setSelectionWithSmooth(0);
-//        });
+        // 使用 View.post() 确保在视图布局完成后执行焦点设置
+        favoriteAppsGrid.post(() -> {
+            // 1. 请求焦点（确保父容器和本身能获得焦点）
+            favoriteAppsGrid.requestFocus();
+            // 2. 设置选中项
+            favoriteAppsGrid.setSelectionWithSmooth(0);
+        });
     }
 
     /**
@@ -436,17 +417,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showAllApps() {
-        allAppsContainer.setVisibility(View.VISIBLE);
-        allAppsContainer.setAlpha(0f);
-        allAppsContainer.animate().alpha(1f).setDuration(200).start();
-
-        // 全屏 Grid 自动获取焦点
-        appListGrid.requestFocus();
-        appListGrid.setSelectionWithSmooth(0);
-        favoriteAppsGrid.setVisibility(View.GONE);
         if (previewPanel.getVisibility() == View.VISIBLE)
             previewPanel.setVisibility(View.GONE);
-        topSettingsBar.setVisibility(View.INVISIBLE);
+        topSettingsBar.setVisibility(View.GONE);
+        int screenHeight = ScreenUtils.getScreenHeight();
+        favoriteAppsContainer.animate().translationY(-screenHeight).setDuration(500).start();
+        allAppsContainer.animate().translationY(-screenHeight).setDuration(500).start();
+        appListGrid.requestFocus();
+        appListGrid.setSelectionWithSmooth(0);
+    }
+
+    private void showHomeApps() {
+        topSettingsBar.setVisibility(View.VISIBLE);
+        int screenHeight = ScreenUtils.getScreenHeight();
+        favoriteAppsContainer.animate().translationY(0).setDuration(500).start();
+        allAppsContainer.animate().translationY(screenHeight).setDuration(500).start();
+        favoriteAppsGrid.requestFocus();
+        favoriteAppsGrid.setSelectionWithSmooth(0);
     }
 
     /**
@@ -465,17 +452,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void showHomeApps() {
-        allAppsContainer.setVisibility(View.GONE);
-        allAppsContainer.setAlpha(0f);
-        allAppsContainer.animate().alpha(1f).setDuration(200).start();
-
-        // 全屏 Grid 自动获取焦点
-        favoriteAppsGrid.setVisibility(View.VISIBLE);
-        favoriteAppsGrid.requestFocus();
-        favoriteAppsGrid.setSelectionWithSmooth(0);
-        topSettingsBar.setVisibility(View.VISIBLE);
-    }
 
     private void initDefaleHome() {
         boolean defaultHome = isDefaultHome();
@@ -490,4 +466,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean animateType(int viewAction, int gridType) {
+        if (viewAction == View.FOCUS_DOWN && gridType == 1) {
+            showAllApps();
+            return true;
+        } else if (viewAction == View.FOCUS_UP && gridType == 2) {
+            showHomeApps();
+            return true;
+        }
+        Log.d(TAG, "animateType: 下放控件");
+        return false;
+    }
 }
