@@ -4,31 +4,38 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Canvas;
-import android.graphics.ColorFilter;
-import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.view.View;
 import android.view.animation.BounceInterpolator;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 
-import com.blankj.utilcode.util.AppUtils;
+import com.jayjd.boxtop.R;
+import com.jayjd.boxtop.entity.AppInfo;
 
 public class ToolUtils {
     public static void startAnimation(View view) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.O) {
+            Drawable drawable = ContextCompat.getDrawable(view.getContext(), R.drawable.icon_selector_selected);
+            view.setBackground(drawable);
+        }
         view.animate().scaleX(1.05f).scaleY(1.05f).setDuration(500) // 适当延长动画时间
                 .setInterpolator(new BounceInterpolator()) // 使用OvershootInterpolator
                 .start();
     }
 
     public static void endAnimation(View view) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.O) {
+            Drawable drawable = ContextCompat.getDrawable(view.getContext(), R.drawable.icon_selector_default);
+            view.setBackground(drawable);
+        }
         view.animate().scaleX(1f).scaleY(1f).setDuration(500) // 适当延长动画时间
                 .setInterpolator(new BounceInterpolator()) // 使用OvershootInterpolator
                 .start();
     }
+
     public static boolean isAppLaunchable(Context context, String packageName) {
         PackageManager packageManager = context.getPackageManager();
 
@@ -53,6 +60,7 @@ public class ToolUtils {
             return false;
         }
     }
+
     public static void startUninstallProcess(Activity activity, String packageName) {
         if (packageName == null || packageName.isEmpty()) {
             // 提示用户包名不能为空
@@ -75,37 +83,10 @@ public class ToolUtils {
         }
     }
 
-    public static AppUtils.AppInfo getEmptyAppInfo(String name) {
-        return new AppUtils.AppInfo(
-                "",
-                name,
-                new Drawable() {
-                    @Override
-                    public void draw(@NonNull Canvas canvas) {
-
-                    }
-
-                    @Override
-                    public int getOpacity() {
-                        return PixelFormat.UNKNOWN;
-                    }
-
-                    @Override
-                    public void setAlpha(int alpha) {
-
-                    }
-
-                    @Override
-                    public void setColorFilter(@Nullable ColorFilter colorFilter) {
-
-                    }
-                },
-                "",
-                "",
-                0,
-                0,
-                0,
-                false
-        );
+    public static AppInfo getEmptyAppInfo(String name) {
+        AppInfo appInfo = new AppInfo();
+        appInfo.setName(name);
+        appInfo.setPackageName("");
+        return appInfo;
     }
 }

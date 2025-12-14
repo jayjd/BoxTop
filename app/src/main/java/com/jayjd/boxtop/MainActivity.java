@@ -27,14 +27,17 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.blankj.utilcode.util.AppUtils;
+import com.bumptech.glide.Glide;
 import com.chad.library.adapter4.BaseQuickAdapter;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.collect.Iterables;
-import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.collect.Lists;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.jayjd.boxtop.adapter.AppIconAdapter;
 import com.jayjd.boxtop.adapter.SettingsIconAdapter;
+import com.jayjd.boxtop.entity.AppInfo;
 import com.jayjd.boxtop.enums.TopSettingsIcons;
 import com.jayjd.boxtop.listeners.TvOnItemListener;
+import com.jayjd.boxtop.utils.AppsUtils;
 import com.jayjd.boxtop.utils.ToolUtils;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
@@ -51,15 +54,15 @@ public class MainActivity extends AppCompatActivity {
     TextView previewTitle;
     TextView previewDesc;
     FrameLayout allAppsContainer;
-    private final List<AppUtils.AppInfo> favoriteApps = new ArrayList<>();
+    private final List<AppInfo> favoriteApps = new ArrayList<>();
     TvRecyclerView appListGrid;
     TvRecyclerView favoriteAppsGrid;
     TvRecyclerView topSettingsBar;
     AppIconAdapter appListAdapter;
     AppIconAdapter favoriteAppsAdapter;
     SettingsIconAdapter topSettingsAdapter;
-    private List<AppUtils.AppInfo> allApps = new ArrayList<>();
-    private List<AppUtils.AppInfo> systemApps = new ArrayList<>();
+    private List<AppInfo> allApps = new ArrayList<>();
+    private List<AppInfo> systemApps = new ArrayList<>();
 
     /**
      * 带降级的图标加载
@@ -155,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
         });
         appListAdapter.setOnItemClickListener((parent, view, position) -> {
             Log.d("MainActivity", "onItemClick position = " + position);
-            AppUtils.AppInfo appInfo = parent.getItem(position);
+            AppInfo appInfo = parent.getItem(position);
             if (appInfo.getPackageName().isEmpty()) {
                 View inflate = LayoutInflater.from(this).inflate(R.layout.activity_dialog_all_app, null);
                 TvRecyclerView allDialogGrid = inflate.findViewById(R.id.all_dialog_grid);
@@ -164,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
                 allDialogGrid.setAdapter(dialogAppIconAdapter);
                 dialogAppIconAdapter.setItems(systemApps);
                 dialogAppIconAdapter.setOnItemClickListener((baseQuickAdapter1, view1, i1) -> {
-                    AppUtils.AppInfo item = baseQuickAdapter1.getItem(i1);
+                    AppInfo item = baseQuickAdapter1.getItem(i1);
                     if (item.getPackageName().isEmpty()) {
                         return;
                     }
@@ -182,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
             return showAppSettingsDialog(baseQuickAdapter, position);
         });
         favoriteAppsAdapter.setOnItemClickListener((baseQuickAdapter, view, i) -> {
-            AppUtils.AppInfo item = baseQuickAdapter.getItem(i);
+            AppInfo item = baseQuickAdapter.getItem(i);
             if (item.getPackageName().isEmpty()) {
                 View inflate = LayoutInflater.from(this).inflate(R.layout.activity_dialog_all_app, null);
                 TvRecyclerView allDialogGrid = inflate.findViewById(R.id.all_dialog_grid);
@@ -213,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
                 ToolUtils.startAnimation(itemView);
                 AppIconAdapter adapter = (AppIconAdapter) parent.getAdapter();
                 if (adapter != null) {
-                    AppUtils.AppInfo item = adapter.getItem(position);
+                    AppInfo item = adapter.getItem(position);
                     if (!item.getPackageName().isEmpty()) {
                         showPreview(item);
                     }
@@ -227,6 +230,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initView() {
+        ImageView wallPager = findViewById(R.id.wall_pager);
+        Glide.with(this).load(R.drawable.wallpager).centerCrop().into(wallPager);
         // 顶部设置按钮
         topSettingsBar = findViewById(R.id.top_settings_lists);
         // 选中后预览的界面
@@ -247,21 +252,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initData() {
-        List<AppUtils.AppInfo> tempAllApps = AppUtils.getAppsInfo();
-        allApps = Lists.newArrayList(Iterables.filter(tempAllApps, appInfo -> !appInfo.isSystem()));
-        systemApps = Lists.newArrayList(Iterables.filter(tempAllApps, AppUtils.AppInfo::isSystem));
-        Iterator<AppUtils.AppInfo> iterator = systemApps.iterator();
-        while (iterator.hasNext()) {
-            AppUtils.AppInfo next = iterator.next();
-            boolean appLaunchable = ToolUtils.isAppLaunchable(this, next.getPackageName());
-            if (!appLaunchable) {
-                iterator.remove();
-            }
-        }
-        getAllAppsBanner(allApps);
-        allApps.add(allApps.size(), ToolUtils.getEmptyAppInfo("system"));
-
-
         topSettingsAdapter = new SettingsIconAdapter();
         appListAdapter = new AppIconAdapter();
         favoriteAppsAdapter = new AppIconAdapter();
@@ -270,24 +260,42 @@ public class MainActivity extends AppCompatActivity {
         appListGrid.setAdapter(appListAdapter);
         favoriteAppsGrid.setAdapter(favoriteAppsAdapter);
 
-        favoriteApps.add(favoriteAppsAdapter.getItemCount(), ToolUtils.getEmptyAppInfo("add"));
+        List<AppInfo> tempAllApps = AppsUtils.getAppsInfo(this);
 
+        allApps = Lists.newArrayList(Iterables.filter(tempAllApps, appInfo -> {
+            if (appInfo != null) {
+                return !appInfo.isSystem();
+            }
+            return false;
+        }));
+        systemApps = Lists.newArrayList(Iterables.filter(tempAllApps, appInfo -> appInfo != null && appInfo.isSystem()));
+        Iterator<AppInfo> iterator = systemApps.iterator();
+        while (iterator.hasNext()) {
+            AppInfo next = iterator.next();
+            boolean appLaunchable = ToolUtils.isAppLaunchable(this, next.getPackageName());
+            if (!appLaunchable) {
+                iterator.remove();
+            }
+        }
+        getAllAppsBanner(allApps);
+        allApps.add(allApps.size(), ToolUtils.getEmptyAppInfo("system"));
+
+        favoriteApps.add(favoriteAppsAdapter.getItemCount(), ToolUtils.getEmptyAppInfo("add"));
         topSettingsAdapter.setItems(List.of(TopSettingsIcons.values()));
         appListAdapter.setItems(allApps);
         favoriteAppsAdapter.setItems(favoriteApps);
-
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        // 使用 View.post() 确保在视图布局完成后执行焦点设置
-        favoriteAppsGrid.post(() -> {
-            // 1. 请求焦点（确保父容器和本身能获得焦点）
-            favoriteAppsGrid.requestFocus();
-            // 2. 设置选中项
-            favoriteAppsGrid.setSelectionWithSmooth(0);
-        });
+//        // 使用 View.post() 确保在视图布局完成后执行焦点设置
+//        favoriteAppsGrid.post(() -> {
+//            // 1. 请求焦点（确保父容器和本身能获得焦点）
+//            favoriteAppsGrid.requestFocus();
+//            // 2. 设置选中项
+//            favoriteAppsGrid.setSelectionWithSmooth(0);
+//        });
     }
 
     /**
@@ -311,7 +319,7 @@ public class MainActivity extends AppCompatActivity {
         // 优先级 2: 尝试跳转到“默认应用管理”界面 (Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)
         // 此 Intent 在 Android 6.0 (API 23) 及以上版本中更常见，但作为回退选项兼容性更好。
         try {
-            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 intent = new Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS);
                 startActivity(intent);
                 Toast.makeText(this, "请在默认应用设置中更改桌面", Toast.LENGTH_LONG).show();
@@ -356,8 +364,8 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
-    private boolean showAppSettingsDialog(BaseQuickAdapter<AppUtils.AppInfo, ?> parent, int position) {
-        AppUtils.AppInfo appInfo = parent.getItem(position);
+    private boolean showAppSettingsDialog(BaseQuickAdapter<AppInfo, ?> parent, int position) {
+        AppInfo appInfo = parent.getItem(position);
         if (appInfo.getPackageName().isEmpty()) {
             return false;
         }
@@ -383,11 +391,11 @@ public class MainActivity extends AppCompatActivity {
         return inflate;
     }
 
-    private void addTopAppInfo(@NonNull BaseQuickAdapter<AppUtils.AppInfo, ?> baseQuickAdapter, int i, AppIconAdapter topAppAdapter) {
-        AppUtils.AppInfo dialogAppInfo = baseQuickAdapter.getItem(i);
-        List<AppUtils.AppInfo> items = topAppAdapter.getItems();
+    private void addTopAppInfo(@NonNull BaseQuickAdapter<AppInfo, ?> baseQuickAdapter, int i, AppIconAdapter topAppAdapter) {
+        AppInfo dialogAppInfo = baseQuickAdapter.getItem(i);
+        List<AppInfo> items = topAppAdapter.getItems();
         if (!dialogAppInfo.getPackageName().isEmpty()) {
-            ArrayList<AppUtils.AppInfo> appInfos = Lists.newArrayList(Iterables.filter(items, appInfo -> appInfo.getPackageName().equals(dialogAppInfo.getPackageName())));
+            ArrayList<AppInfo> appInfos = Lists.newArrayList(Iterables.filter(items, appInfo -> appInfo.getPackageName().equals(dialogAppInfo.getPackageName())));
             if (appInfos.isEmpty()) {
                 topAppAdapter.add(0, dialogAppInfo);
             } else {
@@ -402,8 +410,8 @@ public class MainActivity extends AppCompatActivity {
         materialAlertDialogBuilder.show();
     }
 
-    private void getAllAppsBanner(List<AppUtils.AppInfo> appsInfo) {
-        for (AppUtils.AppInfo appInfo : appsInfo) {
+    private void getAllAppsBanner(List<AppInfo> appsInfo) {
+        for (AppInfo appInfo : appsInfo) {
             Drawable banner = getTvAppIcon(this, appInfo.getPackageName());
             if (banner != null) {
                 appInfo.setIcon(banner);
@@ -412,7 +420,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @SuppressLint("SetTextI18n")
-    private void showPreview(AppUtils.AppInfo appInfo) {
+    private void showPreview(AppInfo appInfo) {
         previewPanel.setVisibility(View.VISIBLE);
 
         previewIcon.setImageDrawable(appInfo.getIcon());

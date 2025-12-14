@@ -2,16 +2,18 @@ package com.jayjd.boxtop.adapter;
 
 import android.content.Context;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.blankj.utilcode.util.AppUtils;
+import com.bumptech.glide.Glide;
 import com.chad.library.adapter4.BaseQuickAdapter;
 import com.chad.library.adapter4.viewholder.QuickViewHolder;
 import com.jayjd.boxtop.R;
+import com.jayjd.boxtop.entity.AppInfo;
 
-public class AppIconAdapter extends BaseQuickAdapter<AppUtils.AppInfo, QuickViewHolder> {
+public class AppIconAdapter extends BaseQuickAdapter<AppInfo, QuickViewHolder> {
 
     @NonNull
     @Override
@@ -20,7 +22,7 @@ public class AppIconAdapter extends BaseQuickAdapter<AppUtils.AppInfo, QuickView
     }
 
     @Override
-    protected void onBindViewHolder(@NonNull QuickViewHolder quickViewHolder, int i, @Nullable AppUtils.AppInfo appInfo) {
+    protected void onBindViewHolder(@NonNull QuickViewHolder quickViewHolder, int i, @Nullable AppInfo appInfo) {
         if (appInfo != null) {
             if (appInfo.getPackageName().isEmpty()) {
                 quickViewHolder.setGone(R.id.iv_icon, true);
@@ -37,7 +39,8 @@ public class AppIconAdapter extends BaseQuickAdapter<AppUtils.AppInfo, QuickView
             } else {
                 quickViewHolder.setGone(R.id.iv_icon, false);
                 quickViewHolder.setGone(R.id.tv_name, false);
-                quickViewHolder.setImageDrawable(R.id.iv_icon, appInfo.getIcon());
+                ImageView imageView = quickViewHolder.getView(R.id.iv_icon);
+                Glide.with(getContext()).load(appInfo.getIcon()).into(imageView);
                 quickViewHolder.setText(R.id.tv_name, appInfo.getName());
             }
         }
