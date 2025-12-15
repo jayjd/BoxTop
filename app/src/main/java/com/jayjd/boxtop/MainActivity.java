@@ -247,13 +247,6 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
                 favoriteAppsAdapter.setItems(favoriteApps);
                 favoriteAppsAdapter.notifyDataSetChanged();
                 favoriteAppsGrid.requestFocus();
-//                topSettingsBar.requestFocus();
-//                topSettingsBar.setSelectedPosition(1);
-//                favoriteAppsGrid.getOnItem
-
-//                favoriteAppsGrid.setSelectionWithSmooth(0);
-//                favoriteAppsGrid.setSelection(0);
-//                favoriteAppsGrid.scrollToPosition(0);
             });
         }).start();
     }
@@ -321,7 +314,6 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             }
         }
     }
-
 
 
     public void showMaterialAlertDialog(Context context, String titleName, View rootView) {

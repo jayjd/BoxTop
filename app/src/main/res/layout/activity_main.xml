@@ -51,7 +51,7 @@
         android:layout_marginHorizontal="40dp"
         android:background="@drawable/bg_blur_card"
         android:visibility="invisible"
-        app:layout_constraintBottom_toTopOf="@id/favorite_apps_grid"
+        app:layout_constraintBottom_toTopOf="@id/favorite_apps_container"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/top_tools_container">

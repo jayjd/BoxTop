@@ -19,28 +19,17 @@ import android.view.View;
 import android.view.animation.BounceInterpolator;
 import android.widget.Toast;
 
-import androidx.core.content.ContextCompat;
-
 import com.blankj.utilcode.util.SizeUtils;
-import com.jayjd.boxtop.R;
 import com.jayjd.boxtop.entity.AppInfo;
 
 public class ToolUtils {
     public static void startAnimation(View view) {
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.O) {
-            Drawable drawable = ContextCompat.getDrawable(view.getContext(), R.drawable.icon_selector_selected);
-            view.setBackground(drawable);
-        }
         view.animate().scaleX(1.1f).scaleY(1.1f).setDuration(500) // 适当延长动画时间
                 .setInterpolator(new BounceInterpolator()) // 使用OvershootInterpolator
                 .start();
     }
 
     public static void endAnimation(View view) {
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.O) {
-            Drawable drawable = ContextCompat.getDrawable(view.getContext(), R.drawable.icon_selector_default);
-            view.setBackground(drawable);
-        }
         view.animate().scaleX(1f).scaleY(1f).setDuration(500) // 适当延长动画时间
                 .setInterpolator(new BounceInterpolator()) // 使用OvershootInterpolator
                 .start();

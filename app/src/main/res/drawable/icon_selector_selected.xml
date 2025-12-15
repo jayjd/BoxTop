@@ -4,5 +4,5 @@
     <!--    <solid android:color="@color/white" />-->
     <stroke
         android:width="2dp"
-        android:color="@color/md_theme_onSurface" />
+        android:color="@color/md_theme_background" />
 </shape>
