@@ -243,7 +243,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
                 AppIconAdapter dialogAppIconAdapter = new AppIconAdapter();
                 allDialogGrid.setAdapter(dialogAppIconAdapter);
                 dialogAppIconAdapter.setItems(allApps);
-                dialogAppIconAdapter.setOnItemClickListener((baseQuickAdapter1, view1, i1) -> addTopAppAllInfo(baseQuickAdapter1, i1, favoriteAppsAdapter));
+                dialogAppIconAdapter.setOnItemClickListener((baseQuickAdapter1, view1, i1) -> addFavoriteApp(baseQuickAdapter1, i1, favoriteAppsAdapter));
                 allDialogGrid.setOnItemListener(new TvOnItemListener());
                 allDialogGrid.requestFocus();
                 showMaterialAlertDialog(this, "所有应用", inflate);
@@ -279,18 +279,19 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         });
     }
 
-    private void addTopAppAllInfo(@NonNull BaseQuickAdapter<AppInfo, ?> baseQuickAdapter, int i, AppIconAdapter topAppAdapter) {
+    private void addFavoriteApp(@NonNull BaseQuickAdapter<AppInfo, ?> baseQuickAdapter, int i, AppIconAdapter favoriteAppsAdapter) {
         AppInfo dialogAppAllInfo = baseQuickAdapter.getItem(i);
-        List<AppInfo> items = topAppAdapter.getItems();
+        List<AppInfo> items = favoriteAppsAdapter.getItems();
         if (!dialogAppAllInfo.getPackageName().isEmpty()) {
-            ArrayList<AppInfo> AppAllInfos = Lists.newArrayList(Iterables.filter(items, AppAllInfo -> {
-                if (AppAllInfo != null) {
-                    return AppAllInfo.getPackageName().equals(dialogAppAllInfo.getPackageName());
+            ArrayList<AppInfo> appInfoArrayList = Lists.newArrayList(Iterables.filter(items, appInfo -> {
+                if (appInfo != null) {
+                    return appInfo.getPackageName().equals(dialogAppAllInfo.getPackageName());
                 }
                 return false;
             }));
-            if (AppAllInfos.isEmpty()) {
-                topAppAdapter.add(0, dialogAppAllInfo);
+            if (appInfoArrayList.isEmpty()) {
+                int itemCount = favoriteAppsAdapter.getItemCount();
+                favoriteAppsAdapter.add(itemCount - 1, dialogAppAllInfo);
                 new Thread(() -> favoriteAppInfoDao.insert(dialogAppAllInfo)).start();
             } else {
                 Toast.makeText(this, dialogAppAllInfo.getName() + " 已添加", Toast.LENGTH_SHORT).show();
