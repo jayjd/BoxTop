@@ -56,9 +56,6 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements ViewAnimateListener {
     private static final String TAG = "MainActivity";
 
-    static {
-        System.loadLibrary("boxtop");
-    }
 
     FrameLayout previewPanel;
     ImageView previewIcon;
