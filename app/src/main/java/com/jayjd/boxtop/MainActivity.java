@@ -123,7 +123,10 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         topSettingsBar.setOnInBorderKeyEventListener(new ViewAnimationShake(topSettingsBar, this, 0, this));
         favoriteAppsGrid.setOnInBorderKeyEventListener(new ViewAnimationShake(favoriteAppsGrid, this, 1, this));
         appListGrid.setOnInBorderKeyEventListener(new ViewAnimationShake(appListGrid, this, 2, this));
-
+        allAppsContainer.post(() -> {
+            int screenHeight = ScreenUtils.getScreenHeight();
+            allAppsContainer.setTranslationY(screenHeight);
+        });
     }
 
     private final Executor dbExecutor = Executors.newSingleThreadExecutor();
@@ -131,10 +134,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
     @Override
     protected void onStart() {
         super.onStart();
-        allAppsContainer.post(() -> {
-            int screenHeight = ScreenUtils.getScreenHeight();
-            allAppsContainer.setTranslationY(screenHeight);
-        });
+
     }
 
     private void initListener() {
@@ -234,6 +234,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             }
         });
     }
+
     private int movePosition = 0;
 
 
@@ -316,6 +317,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
                 }).show();
         return true;
     }
+
     private int moveToPosition = 0;
 
     @SuppressLint("NotifyDataSetChanged")

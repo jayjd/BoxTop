@@ -64,6 +64,7 @@ public class WallPagerActivity extends AppCompatActivity {
                             wallPagerAdapter.setItems(list);
                             wallPagerAdapter.notifyDataSetChanged();
                             trWallList.requestFocus();
+                            return;
                         }
                     } catch (JsonSyntaxException ignored) {
                     }
@@ -125,7 +126,8 @@ public class WallPagerActivity extends AppCompatActivity {
 
             @Override
             public void uploadProgress(Progress progress) {
-                Log.d(TAG, "uploadProgress: 上传进度");            }
+                Log.d(TAG, "uploadProgress: 上传进度");
+            }
 
             @Override
             public void downloadProgress(Progress progress) {
