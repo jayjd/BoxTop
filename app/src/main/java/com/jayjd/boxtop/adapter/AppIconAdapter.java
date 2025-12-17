@@ -27,22 +27,16 @@ public class AppIconAdapter extends BaseQuickAdapter<AppInfo, QuickViewHolder> {
     @Override
     protected void onBindViewHolder(@NonNull QuickViewHolder quickViewHolder, int i, @Nullable AppInfo appInfo) {
         if (appInfo != null) {
+            MaterialCardView cardView = quickViewHolder.getView(R.id.card);
+            cardView.setCardBackgroundColor(appInfo.getCardColor());
+            quickViewHolder.setText(R.id.tv_name, appInfo.getName());
             if (appInfo.getPackageName().isEmpty()) {
                 quickViewHolder.setGone(R.id.app_icon, true);
                 quickViewHolder.setGone(R.id.app_banner, true);
                 quickViewHolder.setGone(R.id.iv_add, false);
-                if (appInfo.getName().equals("system")) {
-                    quickViewHolder.setGone(R.id.tv_name, false);
-                    quickViewHolder.setImageResource(R.id.iv_add, R.drawable.ic_apps_24dp);
-                    quickViewHolder.setText(R.id.tv_name, "系统应用");
-                } else {
-                    quickViewHolder.setVisible(R.id.tv_name, false);
-                    quickViewHolder.setImageResource(R.id.iv_add, R.drawable.ic_add_24dp);
-                    quickViewHolder.setText(R.id.tv_name, "添加应用");
-                }
+                ImageView imageView = quickViewHolder.getView(R.id.iv_add);
+                Glide.with(getContext()).load(appInfo.getAppBanner()).into(imageView);
             } else {
-                MaterialCardView cardView = quickViewHolder.getView(R.id.card);
-                cardView.setCardBackgroundColor(appInfo.getCardColor());
                 quickViewHolder.setGone(R.id.iv_add, true);
                 quickViewHolder.setGone(R.id.tv_name, false);
                 quickViewHolder.setGone(R.id.app_icon, appInfo.isBanner());
@@ -57,7 +51,7 @@ public class AppIconAdapter extends BaseQuickAdapter<AppInfo, QuickViewHolder> {
                     drawable = ToolUtils.getBase64ToDrawable(appInfo.getAppIconBase64());
                 }
                 Glide.with(getContext()).load(drawable).into(imageView);
-                quickViewHolder.setText(R.id.tv_name, appInfo.getName());
+
             }
         }
     }

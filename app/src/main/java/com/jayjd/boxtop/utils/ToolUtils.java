@@ -115,10 +115,12 @@ public class ToolUtils {
             return null;
         }
     }
+
     public static Drawable getBase64ToDrawable(String iconBase64) {
         byte[] bytes = EncodeUtils.base64Decode(iconBase64);
         return ConvertUtils.bytes2Drawable(bytes);
     }
+
     public static boolean isAppLaunchable(Context context, String packageName) {
         PackageManager packageManager = context.getPackageManager();
 
@@ -188,10 +190,14 @@ public class ToolUtils {
         activity.startActivityForResult(intent, 1001);
     }
 
-    public static AppInfo getEmptyAppInfo(String name) {
+    public static AppInfo getEmptyAppInfo(String name, Drawable drawable, int cardColor) {
         AppInfo appInfo = new AppInfo();
         appInfo.setName(name);
         appInfo.setPackageName("");
+        appInfo.setAppBanner(drawable);
+        if (cardColor != 0) {
+            appInfo.setCardColor(cardColor);
+        }
         return appInfo;
     }
 
@@ -287,6 +293,7 @@ public class ToolUtils {
 
         return icon;
     }
+
     public static int normalizeColor(int color) {
         float[] hsv = new float[3];
         Color.colorToHSV(color, hsv);
@@ -302,6 +309,7 @@ public class ToolUtils {
 
         return Color.HSVToColor(hsv);
     }
+
     /**
      * 跳转到系统设置中更改 Home 默认应用的界面。
      * 兼容 Android 5.0 及以上设备。
@@ -343,6 +351,7 @@ public class ToolUtils {
             Toast.makeText(activity, "无法打开系统设置", Toast.LENGTH_SHORT).show();
         }
     }
+
     public static int normalizeBold(int color) {
         if (Color.alpha(color) < 255) {
             return Color.parseColor("#444444");
@@ -366,6 +375,7 @@ public class ToolUtils {
 
         return Color.HSVToColor(255, hsv);
     }
+
     public static int normalizeForBackground(int color) {
         if (Color.alpha(color) < 255) {
             return Color.parseColor("#263238");
