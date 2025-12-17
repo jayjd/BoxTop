@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.animation.BounceInterpolator;
 import android.widget.Toast;
 
+import com.blankj.utilcode.util.AppUtils;
 import com.blankj.utilcode.util.ConvertUtils;
 import com.blankj.utilcode.util.EncodeUtils;
 import com.blankj.utilcode.util.SizeUtils;
@@ -170,12 +171,8 @@ public class ToolUtils {
 
     public static void uninstallApp(Context context, String packageName) {
         if (packageName == null || packageName.isEmpty()) return;
-
         try {
-            Intent intent = new Intent(Intent.ACTION_DELETE);
-            intent.setData(Uri.parse("package:" + packageName));
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(intent);
+            AppUtils.uninstallApp(packageName);
         } catch (Exception e) {
             Toast.makeText(context, "无法打开卸载界面", Toast.LENGTH_SHORT).show();
         }

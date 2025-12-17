@@ -2,11 +2,18 @@ package com.jayjd.boxtop;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.media.tv.TvContentRating;
+import android.media.tv.TvContract;
+import android.media.tv.TvInputInfo;
+import android.media.tv.TvInputManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -49,6 +56,7 @@ import com.jayjd.boxtop.listeners.ViewAnimateListener;
 import com.jayjd.boxtop.listeners.ViewAnimationShake;
 import com.jayjd.boxtop.utils.AppsUtils;
 import com.jayjd.boxtop.utils.ToolUtils;
+import com.jayjd.boxtop.utils.TvProviderContentHelper;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
 import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
@@ -63,8 +71,6 @@ import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity implements ViewAnimateListener {
     private static final String TAG = "MainActivity";
-
-
     FrameLayout previewPanel;
     ImageView previewIcon;
     TextView previewTitle;
@@ -97,9 +103,49 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             return insets;
         });
 //        initDefaleHome();
+        initHDMI();
         initView();
         initData();
         initListener();
+    }
+
+    private void initHDMI() {
+        TvInputManager tvInputManager = (TvInputManager) getSystemService(Context.TV_INPUT_SERVICE);
+        if (tvInputManager == null) {
+            Log.e(TAG, "initHDMI: tvInputManager 不可用");
+            return;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            List<TvContentRating> blockedRatings = tvInputManager.getBlockedRatings();
+            Log.d(TAG, "initHDMI: 被屏蔽的评分系统: " + blockedRatings);
+        }
+        List<TvInputInfo> tvInputList = tvInputManager.getTvInputList();
+        if (tvInputList != null && !tvInputList.isEmpty()) {
+            for (TvInputInfo tvInputInfo : tvInputList) {
+                Log.d(TAG, "initHDMI: " + tvInputInfo.getId() + " " + tvInputInfo.getType());
+            }
+        } else {
+            Log.d(TAG, "initHDMI: 没有 HDMI 输入源");
+        }
+    }
+
+    public void switchToHdmiInput(String inputId) {
+        if (inputId == null) return;
+
+        // 构造 Intent，指向该输入源
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+
+        // 设置 Uri 为该输入源的内容 URI
+        // 格式通常是 content://android.media.tv/passthrough/输入源ID
+        Uri passthroughUri = TvContract.buildChannelsUriForInput(inputId);
+        intent.setData(passthroughUri);
+        try {
+            startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+            // 如果系统没有TV应用可以处理这个URI，则切换失败。
+            // 这通常发生在系统定制不够完善或权限不足时。
+            Log.e("TV_DESKTOP", "无法启动输入源: " + inputId, e);
+        }
     }
 
 
@@ -215,12 +261,12 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             public void onItemSelected(TvRecyclerView parent, View itemView, int position) {
                 Log.d("MainActivity", "onItemSelected position = " + position);
                 ToolUtils.startAnimation(itemView);
-                AppIconAdapter adapter = (AppIconAdapter) parent.getAdapter();
-                if (adapter != null) {
-                    AppInfo item = adapter.getItem(position);
-                    if (!item.getPackageName().isEmpty()) {
-                        showPreview(item);
-                    }
+                AppInfo item = favoriteAppsAdapter.getItem(position);
+                if (item.getPackageName().isEmpty()) return;
+                List<TvProviderContentHelper.ChannelInfo> channelsByInputId = TvProviderContentHelper.getChannelsByInputId(itemView.getContext(), item.getPackageName());
+                Log.d("MainActivity", "onItemSelected channelsByInputId = " + channelsByInputId.size());
+                for (TvProviderContentHelper.ChannelInfo channelInfo : channelsByInputId) {
+                    Log.d("MainActivity", "onItemSelected channelInfo = " + channelInfo);
                 }
             }
 
