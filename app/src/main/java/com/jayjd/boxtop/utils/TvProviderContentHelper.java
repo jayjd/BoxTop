@@ -7,6 +7,8 @@ import android.media.tv.TvContract;
 import android.net.Uri;
 import android.util.Log;
 
+import androidx.tvprovider.media.tv.TvContractCompat;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +19,29 @@ import java.util.List;
 public class TvProviderContentHelper {
 
     private static final String TAG = "TvContentHelper";
+
+
+    public static void test(Context context) {
+
+        String[] projection = {TvContractCompat.Channels._ID, TvContractCompat.Channels.COLUMN_DISPLAY_NAME, TvContractCompat.Channels.COLUMN_PACKAGE_NAME, TvContractCompat.Channels.COLUMN_BROWSABLE};
+
+        Cursor cursor = context.getContentResolver().query(TvContractCompat.Channels.CONTENT_URI, projection, null, null, null);
+
+        if (cursor == null) {
+            Log.e(TAG, "test: query cursor is null");
+            return;
+        }
+        Log.d(TAG, "test: cursor count = " + cursor.getCount());
+        while (cursor.moveToNext()) {
+            long channelId = cursor.getLong(0);
+            String name = cursor.getString(1);
+            String pkg = cursor.getString(2);
+            int browsable = cursor.getInt(3);
+
+            Log.d(TAG, "Channel -> id=" + channelId + ", name=" + name + ", pkg=" + pkg + ", browsable=" + browsable);
+        }
+        cursor.close();
+    }
 
     /**
      * 【方法一】获取指定 TV 输入服务 (InputId) 下注册的所有频道信息。
@@ -40,10 +65,8 @@ public class TvProviderContentHelper {
         String[] PROJECTION = {TvContract.Channels._ID, TvContract.Channels.COLUMN_DISPLAY_NAME, TvContract.Channels.COLUMN_INPUT_ID};
         String SELECTION = TvContract.Channels.COLUMN_INPUT_ID + "=?";
         String[] SELECTION_ARGS = {inputId};
-        try (Cursor cursor = resolver.query(TvContract.Channels.CONTENT_URI, PROJECTION, SELECTION, SELECTION_ARGS, null // 不排序
-        )) {
+        try (Cursor cursor = resolver.query(TvContract.Channels.CONTENT_URI, PROJECTION, SELECTION, SELECTION_ARGS, null)) {
             // 不排序
-
             if (cursor != null && cursor.moveToFirst()) {
                 do {
                     ChannelInfo info = new ChannelInfo();

@@ -263,11 +263,12 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
                 ToolUtils.startAnimation(itemView);
                 AppInfo item = favoriteAppsAdapter.getItem(position);
                 if (item.getPackageName().isEmpty()) return;
-                List<TvProviderContentHelper.ChannelInfo> channelsByInputId = TvProviderContentHelper.getChannelsByInputId(itemView.getContext(), item.getPackageName());
-                Log.d("MainActivity", "onItemSelected channelsByInputId = " + channelsByInputId.size());
-                for (TvProviderContentHelper.ChannelInfo channelInfo : channelsByInputId) {
-                    Log.d("MainActivity", "onItemSelected channelInfo = " + channelInfo);
-                }
+                TvProviderContentHelper.test(itemView.getContext());
+//                List<TvProviderContentHelper.ChannelInfo> channelsByInputId = TvProviderContentHelper.getChannelsByInputId(itemView.getContext(), item.getPackageName());
+//                Log.d("MainActivity", "onItemSelected channelsByInputId = " + channelsByInputId.size());
+//                for (TvProviderContentHelper.ChannelInfo channelInfo : channelsByInputId) {
+//                    Log.d("MainActivity", "onItemSelected channelInfo = " + channelInfo);
+//                }
             }
 
             @Override

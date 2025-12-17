@@ -3,13 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!-- TV相关权限 -->
-    <uses-permission android:name="com.android.providers.tv.permission.READ_EPG_DATA" />
-    <uses-permission android:name="com.android.providers.tv.permission.WRITE_EPG_DATA" />
     <uses-permission android:name="android.permission.READ_TV_LISTINGS" />
-
     <!-- 如果针对Android 10及以上 -->
     <uses-permission android:name="android.permission.READ_TV_CHANNEL_INFO" />
-    <uses-feature android:name="android.hardware.type.television" android:required="true" />
 
     <!-- TV 必须权限 -->
     <uses-permission android:name="android.permission.INTERNET" />
