@@ -46,6 +46,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.jayjd.boxtop.adapter.AppIconAdapter;
+import com.jayjd.boxtop.adapter.PreviewSettingsAdapter;
 import com.jayjd.boxtop.adapter.SettingsIconAdapter;
 import com.jayjd.boxtop.dao.FavoriteAppInfoDao;
 import com.jayjd.boxtop.database.AppDataBase;
@@ -59,11 +60,13 @@ import com.jayjd.boxtop.listeners.ViewAnimationShake;
 import com.jayjd.boxtop.receiver.UsbBroadcastReceiver;
 import com.jayjd.boxtop.utils.AppsUtils;
 import com.jayjd.boxtop.utils.NetworkMonitor;
+import com.jayjd.boxtop.utils.SPUtils;
 import com.jayjd.boxtop.utils.ToolUtils;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
 import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -149,10 +152,31 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             }
         }
     });
+    ImageView wallPager;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        initWallPager();
+    }
+
+    private void initWallPager() {
+        String defaultWallpaper = (String) SPUtils.get(this, "default_wallpaper", "");
+        if (!defaultWallpaper.isEmpty()) {
+            File file = new File(defaultWallpaper);
+            if (file.exists()) {
+                Glide.with(this).load(file).centerCrop().into(wallPager);
+            } else {
+                Glide.with(this).load(R.drawable.wallpager).centerCrop().into(wallPager);
+            }
+        } else {
+            Glide.with(this).load(R.drawable.wallpager).centerCrop().into(wallPager);
+        }
+    }
 
     private void initView() {
-        ImageView wallPager = findViewById(R.id.wall_pager);
-        Glide.with(this).load(R.drawable.wallpager).centerCrop().into(wallPager);
+        wallPager = findViewById(R.id.wall_pager);
+        initWallPager();
         // 顶部设置按钮
         topSettingsBar = findViewById(R.id.top_settings_lists);
         // 选中后预览的界面
@@ -404,6 +428,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             }
         });
 
+        topSettingsBar.setOnItemListener(new TvOnItemListener());
         appListGrid.setOnItemListener(new TvOnItemListener());
         favoriteAppsGrid.setOnItemListener(new TvOnItemListener());
     }

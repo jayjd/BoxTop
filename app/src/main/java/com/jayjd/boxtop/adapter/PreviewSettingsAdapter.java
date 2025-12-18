@@ -1,4 +1,4 @@
-package com.jayjd.boxtop;
+package com.jayjd.boxtop.adapter;
 
 import android.content.Context;
 import android.view.ViewGroup;
@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 
 import com.chad.library.adapter4.BaseQuickAdapter;
 import com.chad.library.adapter4.viewholder.QuickViewHolder;
+import com.jayjd.boxtop.R;
 import com.jayjd.boxtop.enums.PreviewSettings;
 
 public class PreviewSettingsAdapter extends BaseQuickAdapter<PreviewSettings, QuickViewHolder> {
