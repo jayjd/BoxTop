@@ -1,8 +1,7 @@
 package com.jayjd.boxtop.listeners;
 
-import android.net.Uri;
-
 public interface UsbDriveListener {
-    void onUsbDriveStateChanged(boolean isConnected, Uri data);
+    void onUsbDriveStateChanged(boolean isConnected);
 
+    void onBluetoothStateChanged(boolean isConnected);
 }

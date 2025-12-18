@@ -15,6 +15,6 @@ public enum TopSettingsIcons {
     }
 
     public static TopSettingsIcons[] getTopSettings() {
-        return new TopSettingsIcons[]{APPS_ICON, BLUETOOTH_ICON, SETTINGS_ICON};
+        return new TopSettingsIcons[]{APPS_ICON, SETTINGS_ICON};
     }
 }

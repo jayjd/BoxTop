@@ -1,5 +1,6 @@
 package com.jayjd.boxtop.receiver;
 
+import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -21,10 +22,16 @@ public class UsbBroadcastReceiver extends BroadcastReceiver {
         Log.d(TAG, "onReceive: " + action);
         if (Intent.ACTION_MEDIA_MOUNTED.equals(action)) {
             // U盘插入
-            usbDriveListener.onUsbDriveStateChanged(true, intent.getData());
+            usbDriveListener.onUsbDriveStateChanged(true);
         } else if (Intent.ACTION_MEDIA_UNMOUNTED.equals(action) || Intent.ACTION_MEDIA_REMOVED.equals(action) || Intent.ACTION_MEDIA_EJECT.equals(action)) {
             // U盘拔出
-            usbDriveListener.onUsbDriveStateChanged(false, intent.getData());
+            usbDriveListener.onUsbDriveStateChanged(false);
+        } else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
+            // 蓝牙连接
+            usbDriveListener.onBluetoothStateChanged(true);
+        } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
+            // 蓝牙断开
+            usbDriveListener.onBluetoothStateChanged(false);
         }
     }
 }

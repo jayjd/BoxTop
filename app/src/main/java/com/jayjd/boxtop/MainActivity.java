@@ -2,6 +2,9 @@ package com.jayjd.boxtop;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -50,6 +53,7 @@ import com.jayjd.boxtop.entity.AppInfo;
 import com.jayjd.boxtop.enums.PreviewSettings;
 import com.jayjd.boxtop.enums.TopSettingsIcons;
 import com.jayjd.boxtop.listeners.TvOnItemListener;
+import com.jayjd.boxtop.listeners.UsbDriveListener;
 import com.jayjd.boxtop.listeners.ViewAnimateListener;
 import com.jayjd.boxtop.listeners.ViewAnimationShake;
 import com.jayjd.boxtop.receiver.UsbBroadcastReceiver;
@@ -65,6 +69,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -91,29 +96,56 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
     AppDataBase appDataBase;
     FavoriteAppInfoDao favoriteAppInfoDao;
 
-    private final UsbBroadcastReceiver usbReceiver = new UsbBroadcastReceiver((isConnected, uri) -> {
-//        adb shell am broadcast -a android.intent.action.MEDIA_MOUNTED -d file:///storage/usb1
+    private final UsbBroadcastReceiver usbReceiver = new UsbBroadcastReceiver(new UsbDriveListener() {
+        @Override
+        public void onUsbDriveStateChanged(boolean isConnected) {
+            //        adb shell am broadcast -a android.intent.action.MEDIA_MOUNTED -d file:///storage/usb1
 //        adb shell am broadcast -a android.intent.action.MEDIA_UNMOUNTED -d file:///storage/usb1
 
-        int index = topSettingsAdapter.itemIndexOfFirst(TopSettingsIcons.FLASH_DRIVE_ICON);
-        if (isConnected) {
-            // 插入U盘
-            if (index == -1) {
-                List<TopSettingsIcons> items = topSettingsAdapter.getItems();
-                items.add(0, TopSettingsIcons.FLASH_DRIVE_ICON);
-                topSettingsAdapter.setItems(items);
-                topSettingsAdapter.notifyDataSetChanged();
+            int index = topSettingsAdapter.itemIndexOfFirst(TopSettingsIcons.FLASH_DRIVE_ICON);
+            if (isConnected) {
+                // 插入U盘
+                if (index == -1) {
+                    List<TopSettingsIcons> items = topSettingsAdapter.getItems();
+                    items.add(0, TopSettingsIcons.FLASH_DRIVE_ICON);
+                    topSettingsAdapter.setItems(items);
+                    topSettingsAdapter.notifyDataSetChanged();
+                }
+                ToolUtils.openFileManager(MainActivity.this);
+                Toast.makeText(MainActivity.this, "U盘已插入", Toast.LENGTH_SHORT).show();
+            } else {
+                // 拔出U盘
+                if (index != -1) {
+                    List<TopSettingsIcons> items = topSettingsAdapter.getItems();
+                    items.remove(index);
+                    topSettingsAdapter.setItems(items);
+                    topSettingsAdapter.notifyDataSetChanged();
+                    Toast.makeText(MainActivity.this, "U盘已拔出", Toast.LENGTH_SHORT).show();
+                }
             }
-            ToolUtils.openFileManager(this);
-            Toast.makeText(MainActivity.this, "U盘已插入", Toast.LENGTH_SHORT).show();
-        } else {
-            // 拔出U盘
-            if (index != -1) {
-                List<TopSettingsIcons> items = topSettingsAdapter.getItems();
-                items.remove(index);
-                topSettingsAdapter.setItems(items);
-                topSettingsAdapter.notifyDataSetChanged();
-                Toast.makeText(MainActivity.this, "U盘已拔出", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onBluetoothStateChanged(boolean isConnected) {
+            // 蓝牙连接
+            if (isConnected) {
+                if (topSettingsAdapter.itemIndexOfFirst(TopSettingsIcons.BLUETOOTH_ICON) == -1) {
+                    List<TopSettingsIcons> items = topSettingsAdapter.getItems();
+                    items.add(0, TopSettingsIcons.BLUETOOTH_ICON);
+                    topSettingsAdapter.setItems(items);
+                    topSettingsAdapter.notifyDataSetChanged();
+                }
+                Toast.makeText(MainActivity.this, "蓝牙已连接", Toast.LENGTH_SHORT).show();
+            } else {
+                // 蓝牙断开
+                int index = topSettingsAdapter.itemIndexOfFirst(TopSettingsIcons.BLUETOOTH_ICON);
+                if (index != -1) {
+                    List<TopSettingsIcons> items = topSettingsAdapter.getItems();
+                    items.remove(index);
+                    topSettingsAdapter.setItems(items);
+                    topSettingsAdapter.notifyDataSetChanged();
+                    Toast.makeText(MainActivity.this, "蓝牙已断开", Toast.LENGTH_SHORT).show();
+                }
             }
         }
     });
@@ -167,9 +199,51 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         initListener();
     }
 
+    private void initDeviceState() {
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+
+        if (adapter != null && adapter.isEnabled()) {
+            Set<BluetoothDevice> bondedDevices = adapter.getBondedDevices();
+            for (BluetoothDevice device : bondedDevices) {
+
+                BluetoothClass btClass = device.getBluetoothClass();
+                if (btClass == null) continue;
+
+                int deviceClass = btClass.getDeviceClass();
+                if (deviceClass == BluetoothClass.Device.PERIPHERAL_KEYBOARD || deviceClass == BluetoothClass.Device.PERIPHERAL_KEYBOARD_POINTING || deviceClass == BluetoothClass.Device.PERIPHERAL_POINTING) {
+                    // 👉 启动时直接显示蓝牙图标
+                    int index = topSettingsAdapter.itemIndexOfFirst(TopSettingsIcons.BLUETOOTH_ICON);
+                    if (index == -1) {
+                        List<TopSettingsIcons> items = topSettingsAdapter.getItems();
+                        items.add(TopSettingsIcons.BLUETOOTH_ICON);
+                        topSettingsAdapter.setItems(items);
+                        topSettingsAdapter.notifyDataSetChanged();
+                    }
+                }
+            }
+        }
+
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
+        initDeviceState();
+        registerNetworkReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_MEDIA_MOUNTED);    // 插入
+        filter.addAction(Intent.ACTION_MEDIA_UNMOUNTED);  // 拔出
+        filter.addAction(Intent.ACTION_MEDIA_REMOVED);    // 拔出
+        filter.addAction(Intent.ACTION_MEDIA_EJECT);      // 弹出
+
+        filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED); // 蓝牙连接
+        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED); // 蓝牙断开
+
+        filter.addDataScheme("file");
+        registerReceiver(usbReceiver, filter);
+    }
+
+    private void registerNetworkReceiver() {
         networkMonitor = new NetworkMonitor(this, new ConnectivityManager.NetworkCallback() {
 
             @Override
@@ -244,13 +318,6 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             }
         });
         networkMonitor.register();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_MEDIA_MOUNTED);    // 插入
-        filter.addAction(Intent.ACTION_MEDIA_UNMOUNTED);  // 拔出
-        filter.addAction(Intent.ACTION_MEDIA_REMOVED);    // 拔出
-        filter.addAction(Intent.ACTION_MEDIA_EJECT);      // 弹出
-        filter.addDataScheme("file");
-        registerReceiver(usbReceiver, filter);
     }
 
     @Override
