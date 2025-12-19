@@ -5,20 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.jayjd.boxtop.listeners.PackageInfoCallback;
-
-import lombok.Setter;
 
 public class BootReceiver extends BroadcastReceiver {
-    @Setter
-    private static PackageInfoCallback callback;
-
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent == null || intent.getData() == null) return;
         String action = intent.getAction();
-        Log.d("TAG", "onReceive: "+action);
+        Log.d("TAG", "onReceive: " + action);
     }
-
-
 }

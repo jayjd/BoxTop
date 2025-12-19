@@ -30,6 +30,7 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.RequiresPermission;
 import androidx.appcompat.app.AppCompatActivity;
@@ -55,12 +56,10 @@ import com.jayjd.boxtop.entity.AppInfo;
 import com.jayjd.boxtop.entity.HotSearchEntity;
 import com.jayjd.boxtop.enums.PreviewSettings;
 import com.jayjd.boxtop.enums.TopSettingsIcons;
-import com.jayjd.boxtop.listeners.PackageInfoCallback;
 import com.jayjd.boxtop.listeners.TvOnItemListener;
 import com.jayjd.boxtop.listeners.UsbDriveListener;
 import com.jayjd.boxtop.listeners.ViewAnimateListener;
 import com.jayjd.boxtop.listeners.ViewAnimationShake;
-import com.jayjd.boxtop.receiver.BootReceiver;
 import com.jayjd.boxtop.receiver.UsbBroadcastReceiver;
 import com.jayjd.boxtop.utils.AppsUtils;
 import com.jayjd.boxtop.utils.NetworkMonitor;
@@ -149,61 +148,39 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             }
         }
 
-        AppInfo delFavorAppInfo = null;
-
         @SuppressLint("NotifyDataSetChanged")
         @Override
         public void onInstalled(Context context, String pkg) {
             AppInfo appInfo = AppsUtils.getAppInfo(context, pkg);
             if (appInfo == null) return;
-            allApps = appListAdapter.getItems();
+
+            List<AppInfo> allApps = appListAdapter.getItems();
             allApps.add(0, appInfo);
             appListAdapter.setItems(allApps);
             appListAdapter.notifyDataSetChanged();
 
-            favoriteApps = favoriteAppsAdapter.getItems();
-            if (favoriteApps.isEmpty()) {
-                Log.d(TAG, "onInstalled: 常用列表为空");
-                return;
-            }
-            for (AppInfo favoriteApp : favoriteApps) {
-                if (favoriteApp.getPackageName().equals(pkg)) delFavorAppInfo = favoriteApp;
-            }
-            if (delFavorAppInfo == null) return;
-            else if (!delFavorAppInfo.getPackageName().equals(pkg)) return;
-            favoriteApps.remove(delFavorAppInfo);
-            appInfo.setSortIndex(delFavorAppInfo.getSortIndex());
-            favoriteApps.add(appInfo.getSortIndex(), appInfo);
-            favoriteAppsAdapter.setItems(favoriteApps);
-            favoriteAppsAdapter.notifyDataSetChanged();
-            new Thread(() -> favoriteAppInfoDao.update(delFavorAppInfo)).start();
+            syncFavoriteOnAddOrUpdate(appInfo);
         }
 
         @SuppressLint("NotifyDataSetChanged")
         @Override
         public void onUninstalled(Context context, String pkg) {
-            allApps = appListAdapter.getItems();
-            AppInfo appInfo = Iterables.find(allApps, input -> {
-                if (input != null) {
-                    return input.getPackageName().equals(pkg);
-                }
-                return false;
-            });
-            if (appInfo == null) return;
-            allApps.remove(appInfo);
-            appListAdapter.setItems(allApps);
-            appListAdapter.notifyDataSetChanged();
-
-            favoriteApps = favoriteAppsAdapter.getItems();
-            for (AppInfo favoriteApp : favoriteApps) {
-                if (favoriteApp.getPackageName().equals(pkg)) delFavorAppInfo = favoriteApp;
+            List<AppInfo> allApps = appListAdapter.getItems();
+            AppInfo appInfo = findByPackage(allApps, pkg);
+            if (appInfo != null) {
+                allApps.remove(appInfo);
+                appListAdapter.setItems(allApps);
+                appListAdapter.notifyDataSetChanged();
             }
-            if (delFavorAppInfo == null) return;
-            else if (!delFavorAppInfo.getPackageName().equals(pkg)) return;
-            favoriteApps.remove(delFavorAppInfo);
-            favoriteAppsAdapter.setItems(favoriteApps);
-            favoriteAppsAdapter.notifyDataSetChanged();
-            new Thread(() -> favoriteAppInfoDao.deleteByPackageName(pkg)).start();
+
+            List<AppInfo> favoriteApps = favoriteAppsAdapter.getItems();
+            AppInfo fav = findByPackage(favoriteApps, pkg);
+            if (fav != null) {
+                favoriteApps.remove(fav);
+                favoriteAppsAdapter.setItems(favoriteApps);
+                favoriteAppsAdapter.notifyDataSetChanged();
+                new Thread(() -> favoriteAppInfoDao.deleteByPackageName(pkg)).start();
+            }
         }
 
 
@@ -212,32 +189,48 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         public void onUpdated(Context context, String pkg) {
             AppInfo appInfo = AppsUtils.getAppInfo(context, pkg);
             if (appInfo == null) return;
-            allApps = appListAdapter.getItems();
-            AppInfo delAppInfo = Iterables.find(allApps, input -> {
-                if (input != null) {
-                    return input.getPackageName().equals(pkg);
-                }
-                return false;
-            });
-            if (delAppInfo == null) return;
-            allApps.remove(delAppInfo);
-            allApps.add(0, appInfo);
-            appListAdapter.setItems(allApps);
-            appListAdapter.notifyDataSetChanged();
 
-            favoriteApps = favoriteAppsAdapter.getItems();
-            for (AppInfo favoriteApp : favoriteApps) {
-                if (favoriteApp.getPackageName().equals(pkg)) delFavorAppInfo = favoriteApp;
+            List<AppInfo> allApps = appListAdapter.getItems();
+            AppInfo old = findByPackage(allApps, pkg);
+            if (old != null) {
+                allApps.remove(old);
+                allApps.add(0, appInfo);
+                appListAdapter.setItems(allApps);
+                appListAdapter.notifyDataSetChanged();
             }
-            if (delFavorAppInfo == null) return;
-            else if (!delFavorAppInfo.getPackageName().equals(pkg)) return;
 
-            favoriteApps.remove(delFavorAppInfo);
-            appInfo.setSortIndex(delFavorAppInfo.getSortIndex());
-            favoriteApps.add(appInfo.getSortIndex(), appInfo);
+            syncFavoriteOnAddOrUpdate(appInfo);
+        }
+
+        @Nullable
+        private AppInfo findByPackage(List<AppInfo> list, String pkg) {
+            if (list == null || list.isEmpty()) return null;
+            for (AppInfo app : list) {
+                if (app != null && pkg.equals(app.getPackageName())) {
+                    return app;
+                }
+            }
+            return null;
+        }
+
+        @SuppressLint("NotifyDataSetChanged")
+        private void syncFavoriteOnAddOrUpdate(AppInfo newApp) {
+            List<AppInfo> favoriteApps = favoriteAppsAdapter.getItems();
+            if (favoriteApps.isEmpty()) return;
+
+            AppInfo old = findByPackage(favoriteApps, newApp.getPackageName());
+            if (old == null) return;
+
+            int index = old.getSortIndex();
+            favoriteApps.remove(old);
+
+            newApp.setSortIndex(index);
+            favoriteApps.add(index, newApp);
+
             favoriteAppsAdapter.setItems(favoriteApps);
             favoriteAppsAdapter.notifyDataSetChanged();
-            new Thread(() -> favoriteAppInfoDao.update(delFavorAppInfo)).start();
+
+            new Thread(() -> favoriteAppInfoDao.update(old)).start();
         }
     });
     ImageView wallPager;
@@ -490,25 +483,6 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
     }
 
     private void initListener() {
-        BootReceiver.setCallback(new PackageInfoCallback() {
-            @Override
-            public void onInstalled(String pkg) {
-                // 安装应用，更新图标
-                Log.d("BootReceiver", "安装应用 " + pkg);
-            }
-
-            @Override
-            public void onUninstalled(String pkg) {
-                // 卸载应用，移除图标
-                Log.d("BootReceiver", "卸载应用 " + pkg);
-            }
-
-            @Override
-            public void onUpdated(String pkg) {
-                // 更新应用，更新图标
-                Log.d("BootReceiver", "更新应用 " + pkg);
-            }
-        });
         topSettingsAdapter.setOnItemClickListener((baseQuickAdapter, view, i) -> {
             TopSettingsIcons item = baseQuickAdapter.getItem(i);
             if (item == TopSettingsIcons.WIFI_ICON || item == TopSettingsIcons.ETHERNET_ICON) {
@@ -565,7 +539,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
                 allDialogGrid.setLayoutManager(new V7GridLayoutManager(this, 2, V7GridLayoutManager.HORIZONTAL, false));
                 AppIconAdapter dialogAppIconAdapter = new AppIconAdapter();
                 allDialogGrid.setAdapter(dialogAppIconAdapter);
-                allApps = Lists.newArrayList(Iterables.filter(allApps, appInfo -> {
+                allApps = Lists.newArrayList(Iterables.filter(appListAdapter.getItems(), appInfo -> {
                     if (appInfo != null) {
                         return !appInfo.getPackageName().isEmpty();
                     }
@@ -732,9 +706,9 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
 
         new Thread(() -> {
             List<AppInfo> tempAllApps = AppsUtils.getAppsInfo(this);
-            allApps = Lists.newArrayList(Iterables.filter(tempAllApps, AppAllInfo -> {
-                if (AppAllInfo != null) {
-                    return !AppAllInfo.isSystem();
+            allApps = Lists.newArrayList(Iterables.filter(tempAllApps, appInfo -> {
+                if (appInfo != null) {
+                    return !appInfo.isSystem();
                 }
                 return false;
             }));
