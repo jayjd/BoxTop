@@ -293,6 +293,10 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         zongyi.setLayoutManager(new V7LinearLayoutManager(this, V7LinearLayoutManager.VERTICAL, false));
         dongman.setLayoutManager(new V7LinearLayoutManager(this, V7LinearLayoutManager.VERTICAL, false));
 
+        movie.setOnItemListener(new TvOnItemListener());
+        tv.setOnItemListener(new TvOnItemListener());
+        zongyi.setOnItemListener(new TvOnItemListener());
+        dongman.setOnItemListener(new TvOnItemListener());
 
         categoryMovieAdapter = new CategoryTvAdapter();
         categoryTvAdapter = new CategoryTvAdapter();

@@ -17,6 +17,8 @@ public class TvOnItemListener implements TvRecyclerView.OnItemListener {
     public void onItemSelected(TvRecyclerView parent, View itemView, int position) {
         TextView textView = itemView.findViewById(R.id.tv_name);
         if (textView != null) textView.setSelected(true);
+        TextView categoryName = itemView.findViewById(R.id.category_name);
+        if (categoryName != null) categoryName.setSelected(true);
         ToolUtils.startAnimation(itemView);
     }
 

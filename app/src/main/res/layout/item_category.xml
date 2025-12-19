@@ -24,6 +24,7 @@
             android:paddingHorizontal="24dp"
             android:paddingVertical="8dp"
             android:text="1"
+            android:textColor="@color/text_secondary"
             android:textSize="18sp"
             android:textStyle="bold" />
 
@@ -32,9 +33,12 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:ellipsize="marquee"
             android:padding="8dp"
+            android:scrollHorizontally="true"
+            android:singleLine="true"
             android:text="内容"
-            android:textColor="@color/md_theme_onBackground" />
+            android:textColor="@color/text_secondary" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

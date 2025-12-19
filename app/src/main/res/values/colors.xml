@@ -140,4 +140,14 @@
     <color name="md_theme_surfaceContainer_highContrast">#F1DFDA</color>
     <color name="md_theme_surfaceContainerHigh_highContrast">#E2D1CC</color>
     <color name="md_theme_surfaceContainerHighest_highContrast">#D4C3BE</color>
+
+
+    <color name="cat_movie">#4F8CFF</color>     <!-- 蓝 -->
+    <color name="cat_tv">#7C5CFF</color>        <!-- 紫 -->
+    <color name="cat_show">#FF8A4C</color>      <!-- 橙 -->
+    <color name="cat_anime">#2ED3A3</color>     <!-- 青绿 -->
+
+    <color name="card_bg">#33FFFFFF</color>     <!-- 半透明白 -->
+    <color name="text_primary">#F5F5F7</color>
+    <color name="text_secondary">#B3FFFFFF</color>
 </resources>

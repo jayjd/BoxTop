@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- drawable/bg_title_movie.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <corners
+        android:topLeftRadius="18dp"
+        android:topRightRadius="18dp" />
+    <gradient
+        android:angle="270"
+        android:endColor="#004F8CFF"
+        android:startColor="#804F8CFF" />
+</shape>
