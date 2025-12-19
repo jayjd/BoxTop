@@ -149,6 +149,8 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             }
         }
 
+        AppInfo delFavorAppInfo = null;
+
         @SuppressLint("NotifyDataSetChanged")
         @Override
         public void onInstalled(Context context, String pkg) {
@@ -164,15 +166,11 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
                 Log.d(TAG, "onInstalled: 常用列表为空");
                 return;
             }
-            AppInfo delFavorAppInfo = Iterables.find(new ArrayList<>(favoriteApps), input -> {
-                if (input != null && !input.getPackageName().isEmpty()) {
-                    return input.getPackageName().equals(pkg);
-                }
-                return false;
-            }, null);
-            if (delFavorAppInfo == null) {
-                return;
+            for (AppInfo favoriteApp : favoriteApps) {
+                if (favoriteApp.getPackageName().equals(pkg)) delFavorAppInfo = favoriteApp;
             }
+            if (delFavorAppInfo == null) return;
+            else if (!delFavorAppInfo.getPackageName().equals(pkg)) return;
             favoriteApps.remove(delFavorAppInfo);
             appInfo.setSortIndex(delFavorAppInfo.getSortIndex());
             favoriteApps.add(appInfo.getSortIndex(), appInfo);
@@ -197,18 +195,17 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             appListAdapter.notifyDataSetChanged();
 
             favoriteApps = favoriteAppsAdapter.getItems();
-            AppInfo delFavorAppInfo = Iterables.find(favoriteApps, input -> {
-                if (input != null) {
-                    return input.getPackageName().equals(pkg);
-                }
-                return false;
-            });
+            for (AppInfo favoriteApp : favoriteApps) {
+                if (favoriteApp.getPackageName().equals(pkg)) delFavorAppInfo = favoriteApp;
+            }
             if (delFavorAppInfo == null) return;
+            else if (!delFavorAppInfo.getPackageName().equals(pkg)) return;
             favoriteApps.remove(delFavorAppInfo);
             favoriteAppsAdapter.setItems(favoriteApps);
             favoriteAppsAdapter.notifyDataSetChanged();
             new Thread(() -> favoriteAppInfoDao.deleteByPackageName(pkg)).start();
         }
+
 
         @SuppressLint("NotifyDataSetChanged")
         @Override
@@ -229,13 +226,12 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             appListAdapter.notifyDataSetChanged();
 
             favoriteApps = favoriteAppsAdapter.getItems();
-            AppInfo delFavorAppInfo = Iterables.find(favoriteApps, input -> {
-                if (input != null) {
-                    return input.getPackageName().equals(pkg);
-                }
-                return false;
-            });
+            for (AppInfo favoriteApp : favoriteApps) {
+                if (favoriteApp.getPackageName().equals(pkg)) delFavorAppInfo = favoriteApp;
+            }
             if (delFavorAppInfo == null) return;
+            else if (!delFavorAppInfo.getPackageName().equals(pkg)) return;
+
             favoriteApps.remove(delFavorAppInfo);
             appInfo.setSortIndex(delFavorAppInfo.getSortIndex());
             favoriteApps.add(appInfo.getSortIndex(), appInfo);
@@ -705,9 +701,10 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
                         Toast.makeText(this, "系统应用无法卸载", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    new MaterialAlertDialogBuilder(this).setTitle("卸载应用").setMessage("确定要卸载「" + appInfo.getName() + "」吗？").setPositiveButton("卸载", (d, w) -> {
-                        ToolUtils.uninstallApp(this, appInfo.getPackageName());
-                    }).setNegativeButton("取消", null).show();
+                    ToolUtils.uninstallApp(this, appInfo.getPackageName());
+//                    new MaterialAlertDialogBuilder(this).setTitle("卸载应用").setMessage("确定要卸载「" + appInfo.getName() + "」吗？").setPositiveButton("卸载", (d, w) -> {
+//
+//                    }).setNegativeButton("取消", null).show();
                     break;
             }
             dialog.dismiss();

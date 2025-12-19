@@ -21,7 +21,6 @@ import android.view.View;
 import android.view.animation.BounceInterpolator;
 import android.widget.Toast;
 
-import com.blankj.utilcode.util.AppUtils;
 import com.blankj.utilcode.util.ConvertUtils;
 import com.blankj.utilcode.util.EncodeUtils;
 import com.blankj.utilcode.util.SizeUtils;
@@ -208,12 +207,19 @@ public class ToolUtils {
         }
     }
 
-    public static void uninstallApp(Context context, String packageName) {
-        if (packageName == null || packageName.isEmpty()) return;
+    public static void uninstallApp(Activity activity, String packageName) {
+        if (packageName == null || packageName.isEmpty()) {
+            Log.d("TAG", "uninstallApp: " + packageName);
+            return;
+        }
+        Log.d("TAG", "uninstallApp: " + packageName);
         try {
-            AppUtils.uninstallApp(packageName);
+            Uri uri = Uri.parse("package:" + packageName);
+            Intent intent = new Intent(Intent.ACTION_DELETE, uri);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            activity.startActivity(intent);
         } catch (Exception e) {
-            Toast.makeText(context, "无法打开卸载界面", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, "无法打开卸载界面", Toast.LENGTH_SHORT).show();
         }
     }
 
