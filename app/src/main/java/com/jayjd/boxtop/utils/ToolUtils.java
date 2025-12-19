@@ -1,5 +1,6 @@
 package com.jayjd.boxtop.utils;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -14,8 +15,8 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
-import android.provider.DocumentsContract;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.BounceInterpolator;
 import android.widget.Toast;
@@ -35,6 +36,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
+import java.util.List;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -74,7 +76,7 @@ public class ToolUtils {
     }
 
     public static void openFileManager(Activity activity) {
-        new MaterialAlertDialogBuilder(activity).setTitle("提示").setMessage("是否确认插入U盘？").setPositiveButton("确认", (dialog, which) -> {
+        new MaterialAlertDialogBuilder(activity).setTitle("提示").setMessage("是否确认插入U盘/SD卡？").setPositiveButton("确认", (dialog, which) -> {
             // 确认插入U盘
             ToolUtils.openSystemFileManager(activity);
             dialog.dismiss();
@@ -84,16 +86,30 @@ public class ToolUtils {
         }).show();
     }
 
+    @SuppressLint("IntentReset")
     public static void openSystemFileManager(Context context) {
         try {
             Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setDataAndType(Uri.parse("content://com.android.externalstorage.documents/root"), DocumentsContract.Document.MIME_TYPE_DIR);
+            intent.setType("resource/folder");
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
-        } catch (Exception ignored) {
+        } catch (Exception e2) {
+            Log.e("TAG", "openSystemFileManager: ", e2);
+            Toast.makeText(context, "无法启动文件管理", Toast.LENGTH_SHORT).show();
         }
-
     }
+
+    public static boolean hasStoragePermission(List<String> granted) {
+        return granted.contains(Manifest.permission.READ_EXTERNAL_STORAGE) || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU);
+    }
+
+    public static boolean hasBluetoothPermission(List<String> granted) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            return true;
+        }
+        return granted.contains(Manifest.permission.BLUETOOTH_CONNECT);
+    }
+
 //    public static String base64ToString(String entity) {
 //        byte[] bytes;
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

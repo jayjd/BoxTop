@@ -15,7 +15,10 @@ import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.storage.StorageManager;
+import android.os.storage.StorageVolume;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -28,6 +31,7 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.annotation.RequiresPermission;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.palette.graphics.Palette;
@@ -36,6 +40,7 @@ import com.blankj.utilcode.util.AppUtils;
 import com.blankj.utilcode.util.ConvertUtils;
 import com.blankj.utilcode.util.EncodeUtils;
 import com.blankj.utilcode.util.NetworkUtils;
+import com.blankj.utilcode.util.PermissionUtils;
 import com.blankj.utilcode.util.ResourceUtils;
 import com.blankj.utilcode.util.ScreenUtils;
 import com.bumptech.glide.Glide;
@@ -111,30 +116,19 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         public void onUsbDriveStateChanged(boolean isConnected) {
             //        adb shell am broadcast -a android.intent.action.MEDIA_MOUNTED -d file:///storage/usb1
 //        adb shell am broadcast -a android.intent.action.MEDIA_UNMOUNTED -d file:///storage/usb1
-
-            int index = topSettingsAdapter.itemIndexOfFirst(TopSettingsIcons.FLASH_DRIVE_ICON);
             if (isConnected) {
                 // 插入U盘
-                if (index == -1) {
-                    List<TopSettingsIcons> items = topSettingsAdapter.getItems();
-                    items.add(0, TopSettingsIcons.FLASH_DRIVE_ICON);
-                    topSettingsAdapter.setItems(items);
-                    topSettingsAdapter.notifyDataSetChanged();
-                }
+                showTopIcon(TopSettingsIcons.FLASH_DRIVE_ICON);
                 ToolUtils.openFileManager(MainActivity.this);
                 Toast.makeText(MainActivity.this, "U盘已插入", Toast.LENGTH_SHORT).show();
             } else {
                 // 拔出U盘
-                if (index != -1) {
-                    List<TopSettingsIcons> items = topSettingsAdapter.getItems();
-                    items.remove(index);
-                    topSettingsAdapter.setItems(items);
-                    topSettingsAdapter.notifyDataSetChanged();
-                    Toast.makeText(MainActivity.this, "U盘已拔出", Toast.LENGTH_SHORT).show();
-                }
+                removeTopIcon(TopSettingsIcons.FLASH_DRIVE_ICON);
+                Toast.makeText(MainActivity.this, "U盘已拔出", Toast.LENGTH_SHORT).show();
             }
         }
 
+        @SuppressLint("NotifyDataSetChanged")
         @Override
         public void onBluetoothStateChanged(boolean isConnected) {
             // 蓝牙连接
@@ -213,7 +207,9 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
 
     private final Executor dbExecutor = Executors.newSingleThreadExecutor();
     NetworkMonitor networkMonitor;
+    private TopSettingsIcons currentNetworkIcon = null;
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -228,12 +224,70 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         initView();
         initData();
         initListener();
+        registerNetworkReceiver();
     }
 
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    private void initDeviceState() {
-        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+    private void checkForOTGDevice() {
+        StorageManager storageManager = (StorageManager) getSystemService(Context.STORAGE_SERVICE);
+        boolean otgFound = false;
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            List<StorageVolume> volumes = storageManager.getStorageVolumes();
+
+            for (StorageVolume volume : volumes) {
+                // 判断是否为可移动存储（U盘/OTG）
+                if (volume.isRemovable()) {
+                    String description = volume.getDescription(this);
+                    Log.d(TAG, "Detected removable storage: " + description);
+                    otgFound = true;
+                }
+            }
+        }
+        if (otgFound) {
+            Log.i(TAG, "U盘/OTG设备已连接！");
+            showTopIcon(TopSettingsIcons.FLASH_DRIVE_ICON);
+        } else {
+            Log.i(TAG, "未检测到U盘/OTG设备。");
+            removeTopIcon(TopSettingsIcons.FLASH_DRIVE_ICON);
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.S)
+    private void initDeviceState() {
+        List<String> permissions = new ArrayList<>();
+        // OTG / U盘
+        permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+        permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        // 蓝牙（Android 12+）
+        permissions.add(Manifest.permission.BLUETOOTH_CONNECT);
+
+        PermissionUtils.permission(permissions.toArray(new String[0])).rationale((activity, shouldRequest) -> {
+            new MaterialAlertDialogBuilder(activity).setTitle("权限请求").setMessage("需要存储和蓝牙权限以检测U盘和蓝牙遥控器").setPositiveButton("同意", (d, w) -> shouldRequest.again(true)).setNegativeButton("拒绝", (d, w) -> shouldRequest.again(false)).show();
+        }).callback(new PermissionUtils.FullCallback() {
+            @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+            @Override
+            public void onGranted(@NonNull List<String> granted) {
+                Log.d(TAG, "权限已授予: " + granted);
+                if (ToolUtils.hasBluetoothPermission(granted)) {
+                    checkBluetoothRemote();
+                }
+                if (ToolUtils.hasStoragePermission(granted)) {
+                    checkForOTGDevice();
+                }
+            }
+
+            @Override
+            public void onDenied(@NonNull List<String> deniedForever, @NonNull List<String> denied) {
+                Log.w(TAG, "权限被拒绝: " + deniedForever + " / " + denied);
+            }
+        }).theme(ScreenUtils::setFullScreen).request();
+
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    public void checkBluetoothRemote() {
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
         if (adapter != null && adapter.isEnabled()) {
             Set<BluetoothDevice> bondedDevices = adapter.getBondedDevices();
             for (BluetoothDevice device : bondedDevices) {
@@ -254,14 +308,13 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
                 }
             }
         }
-
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.S)
     @Override
     protected void onStart() {
         super.onStart();
         initDeviceState();
-        registerNetworkReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_MEDIA_MOUNTED);    // 插入
         filter.addAction(Intent.ACTION_MEDIA_UNMOUNTED);  // 拔出
@@ -275,77 +328,58 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         registerReceiver(usbReceiver, filter);
     }
 
+    @SuppressLint("NotifyDataSetChanged")
+    private void showTopIcon(TopSettingsIcons icon) {
+        if (topSettingsAdapter.itemIndexOfFirst(icon) != -1) return;
+        List<TopSettingsIcons> items = topSettingsAdapter.getItems();
+        items.add(0, icon);
+        topSettingsAdapter.setItems(items);
+        topSettingsAdapter.notifyDataSetChanged();
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private void removeTopIcon(TopSettingsIcons icon) {
+        int index = topSettingsAdapter.itemIndexOfFirst(icon);
+        if (index == -1) return;
+        List<TopSettingsIcons> items = topSettingsAdapter.getItems();
+        items.remove(index);
+        topSettingsAdapter.setItems(items);
+        topSettingsAdapter.notifyDataSetChanged();
+    }
+
+    private void updateNetworkIcon(TopSettingsIcons newIcon) {
+        if (currentNetworkIcon == newIcon) return;
+
+        removeTopIcon(TopSettingsIcons.WIFI_ICON);
+        removeTopIcon(TopSettingsIcons.ETHERNET_ICON);
+
+        if (newIcon != null) {
+            showTopIcon(newIcon);
+        }
+        currentNetworkIcon = newIcon;
+    }
+
     private void registerNetworkReceiver() {
         networkMonitor = new NetworkMonitor(this, new ConnectivityManager.NetworkCallback() {
 
             @Override
             public void onAvailable(@NonNull Network network) {
-                // 网络可用
                 Log.d("NetworkMonitor", "网络已连接");
             }
 
             @Override
             public void onLost(@NonNull Network network) {
-                // 网络断开
                 Log.d("NetworkMonitor", "网络已断开");
-                int ethernetIndex = topSettingsAdapter.itemIndexOfFirst(TopSettingsIcons.ETHERNET_ICON);
-                if (ethernetIndex != -1) {
-                    List<TopSettingsIcons> items = topSettingsAdapter.getItems();
-                    items.remove(ethernetIndex);
-                    topSettingsAdapter.setItems(items);
-                    topSettingsAdapter.notifyDataSetChanged();
-                }
-                int wifiIndex = topSettingsAdapter.itemIndexOfFirst(TopSettingsIcons.WIFI_ICON);
-                if (wifiIndex != -1) {
-                    List<TopSettingsIcons> items = topSettingsAdapter.getItems();
-                    items.remove(wifiIndex);
-                    topSettingsAdapter.setItems(items);
-                    topSettingsAdapter.notifyDataSetChanged();
-                }
+                removeTopIcon(TopSettingsIcons.WIFI_ICON);
+                removeTopIcon(TopSettingsIcons.ETHERNET_ICON);
             }
 
             @Override
-            public void onCapabilitiesChanged(@NonNull Network network, @NonNull NetworkCapabilities capabilities) {
-                // 网络能力改变
-                Log.d("NetworkMonitor", "网络能力改变 " + capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) + " " + capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET));
-                if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-                    // 有WiFi连接
-                    Log.d("NetworkMonitor", "有WiFi连接");
-                    // 有WiFi连接，更新图标
-                    int index = topSettingsAdapter.itemIndexOfFirst(TopSettingsIcons.WIFI_ICON);
-                    if (index == -1) {
-                        List<TopSettingsIcons> items = topSettingsAdapter.getItems();
-                        items.add(0, TopSettingsIcons.WIFI_ICON);
-                        topSettingsAdapter.setItems(items);
-                        topSettingsAdapter.notifyDataSetChanged();
-                    }
-                    // 有WiFi连接，移除以太网图标
-                    int ethernetIndex = topSettingsAdapter.itemIndexOfFirst(TopSettingsIcons.ETHERNET_ICON);
-                    if (ethernetIndex != -1) {
-                        List<TopSettingsIcons> items = topSettingsAdapter.getItems();
-                        items.remove(ethernetIndex);
-                        topSettingsAdapter.setItems(items);
-                        topSettingsAdapter.notifyDataSetChanged();
-                    }
-                } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
-                    // 有以太网连接
-                    Log.d("NetworkMonitor", "有以太网连接");
-                    // 有以太网连接，更新图标
-                    int index = topSettingsAdapter.itemIndexOfFirst(TopSettingsIcons.ETHERNET_ICON);
-                    if (index == -1) {
-                        List<TopSettingsIcons> items = topSettingsAdapter.getItems();
-                        items.add(0, TopSettingsIcons.ETHERNET_ICON);
-                        topSettingsAdapter.setItems(items);
-                        topSettingsAdapter.notifyDataSetChanged();
-                    }
-                    // 有以太网连接，移除WIFI图标
-                    int wifiIndex = topSettingsAdapter.itemIndexOfFirst(TopSettingsIcons.WIFI_ICON);
-                    if (wifiIndex != -1) {
-                        List<TopSettingsIcons> items = topSettingsAdapter.getItems();
-                        items.remove(wifiIndex);
-                        topSettingsAdapter.setItems(items);
-                        topSettingsAdapter.notifyDataSetChanged();
-                    }
+            public void onCapabilitiesChanged(@NonNull Network network, @NonNull NetworkCapabilities caps) {
+                if (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                    updateNetworkIcon(TopSettingsIcons.WIFI_ICON);
+                } else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
+                    updateNetworkIcon(TopSettingsIcons.ETHERNET_ICON);
                 }
             }
         });
@@ -369,7 +403,6 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             public void onInstalled(String pkg) {
                 // 安装应用，更新图标
                 Log.d("BootReceiver", "安装应用 " + pkg);
-
             }
 
             @Override
