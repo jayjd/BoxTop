@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.icu.text.SimpleDateFormat;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -36,6 +35,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.RequiresPermission;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.blankj.utilcode.util.AppUtils;
 import com.blankj.utilcode.util.NetworkUtils;
@@ -79,6 +79,7 @@ import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
 import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -93,7 +94,7 @@ import java.util.concurrent.Executors;
 public class MainActivity extends AppCompatActivity implements ViewAnimateListener {
     private static final String TAG = "MainActivity";
     LinearLayout allAppsContainer;
-    FrameLayout favoriteAppsContainer;
+    ConstraintLayout favoriteAppsContainer;
     private final List<AppInfo> favoriteApps = new ArrayList<>();
     TvRecyclerView appListGrid;
     TvRecyclerView favoriteAppsGrid;
@@ -270,7 +271,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
     protected void onResume() {
         super.onResume();
         initWallPager();
-        startCpuMonitor();
+//        startCpuMonitor();
     }
 
     @Override
@@ -840,6 +841,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         updateCpuDisplay(type, value, null);
     }
 
+    @SuppressLint("DefaultLocale")
     private void updateCpuDisplay(String type, float value, List<Float> coreUsages) {
         String currentText = functionTitle.getText().toString();
         String[] lines = currentText.split("\n");

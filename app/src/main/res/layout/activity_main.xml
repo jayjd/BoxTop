@@ -18,35 +18,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!--顶部工具栏-->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/top_tools_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <com.owen.tvrecyclerview.widget.TvRecyclerView
-            android:id="@+id/top_settings_lists"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_blur_card"
-            android:orientation="horizontal"
-            android:padding="4dp"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_default="wrap"
-            app:tv_horizontalSpacingWithMargins="8dp"
-            app:tv_verticalSpacingWithMargins="8dp"
-            tools:itemCount="6"
-            tools:listitem="@layout/activity_settings_icon_item" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
     <!--首页中间预览-->
     <FrameLayout
         android:id="@+id/preview_panel"
@@ -58,7 +29,7 @@
         app:layout_constraintBottom_toTopOf="@id/favorite_apps_container"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/top_tools_container">
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -207,56 +178,6 @@
 
         </LinearLayout>
     </FrameLayout>
-    <!--功能区域-->
-    <LinearLayout
-        android:id="@+id/function_container"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="@drawable/bg_blur_card"
-        android:clipToOutline="true"
-        android:orientation="vertical"
-        android:padding="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="1.5:1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias=".1"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias=".1"
-        app:layout_constraintWidth_percent=".45">
-
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <TextView
-                    android:id="@+id/function_title"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingHorizontal="8dp"
-                    android:text="功能"
-                    android:textColor="@color/md_theme_onSurface"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-        </ScrollView>
-
-        <com.owen.tvrecyclerview.widget.TvRecyclerView
-            android:id="@+id/function_grid"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:spanCount="4"
-            app:tv_horizontalSpacingWithMargins="8dp"
-            app:tv_selectedItemIsCentered="true"
-            app:tv_verticalSpacingWithMargins="8dp"
-            tools:listitem="@layout/item_function" />
-    </LinearLayout>
 
     <!--所有应用列表-->
     <LinearLayout
@@ -295,16 +216,114 @@
             tools:listitem="@layout/activity_icon_item" />
     </LinearLayout>
     <!--常用软件列表-->
-    <FrameLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/favorite_apps_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:padding="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0">
+        <!--顶部工具栏-->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/top_tools_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.owen.tvrecyclerview.widget.TvRecyclerView
+                android:id="@+id/top_settings_lists"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_blur_card"
+                android:orientation="horizontal"
+                android:padding="4dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="1"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintWidth_default="wrap"
+                app:tv_horizontalSpacingWithMargins="8dp"
+                app:tv_verticalSpacingWithMargins="8dp"
+                tools:itemCount="6"
+                tools:listitem="@layout/activity_settings_icon_item" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+        <!--功能区域-->
+        <LinearLayout
+            android:id="@+id/function_container"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/bg_blur_card"
+            android:clipToOutline="true"
+            android:orientation="vertical"
+            android:padding="8dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintDimensionRatio="1.5:1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias=".1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias=".1"
+            app:layout_constraintWidth_percent=".45">
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/function_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingHorizontal="8dp"
+                        android:text="功能"
+                        android:textColor="@color/md_theme_onSurface"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </ScrollView>
+
+            <com.owen.tvrecyclerview.widget.TvRecyclerView
+                android:id="@+id/function_grid"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:spanCount="4"
+                app:tv_horizontalSpacingWithMargins="8dp"
+                app:tv_selectedItemIsCentered="true"
+                app:tv_verticalSpacingWithMargins="8dp"
+                tools:listitem="@layout/item_function" />
+        </LinearLayout>
+
+        <com.owen.tvrecyclerview.widget.TvRecyclerView
+            android:id="@+id/view_pager"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/bg_blur_card"
+            android:clipToOutline="true"
+            android:padding="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintDimensionRatio="1.5:1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias=".1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias=".1"
+            app:layout_constraintWidth_percent=".45"
+            tools:targetApi="31" />
+
 
         <com.owen.tvrecyclerview.widget.TvRecyclerView
             android:id="@+id/favorite_apps_grid"
@@ -315,11 +334,16 @@
             android:orientation="horizontal"
             android:padding="16dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="1.0"
             app:tv_horizontalSpacingWithMargins="8dp"
             app:tv_selectedItemIsCentered="true"
             app:tv_verticalSpacingWithMargins="8dp"
             tools:listitem="@layout/activity_icon_item" />
-    </FrameLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
