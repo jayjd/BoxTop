@@ -36,6 +36,8 @@ import androidx.annotation.RequiresApi;
 import androidx.annotation.RequiresPermission;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.Fragment;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.blankj.utilcode.util.AppUtils;
 import com.blankj.utilcode.util.NetworkUtils;
@@ -50,8 +52,15 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.jayjd.boxtop.adapter.AppIconAdapter;
+import com.jayjd.boxtop.adapter.InfoCardPagerAdapter;
 import com.jayjd.boxtop.adapter.PreviewSettingsAdapter;
 import com.jayjd.boxtop.adapter.SettingsIconAdapter;
+import com.jayjd.boxtop.cards.CardConnectivity;
+import com.jayjd.boxtop.cards.CardDevice;
+import com.jayjd.boxtop.cards.CardPerformance;
+import com.jayjd.boxtop.cards.CardStorage;
+import com.jayjd.boxtop.cards.CardSystem;
+import com.jayjd.boxtop.cards.CardWeather;
 import com.jayjd.boxtop.dao.AllAppsInfoDao;
 import com.jayjd.boxtop.dao.FavoriteAppInfoDao;
 import com.jayjd.boxtop.database.AppDataBase;
@@ -67,6 +76,7 @@ import com.jayjd.boxtop.listeners.ViewAnimationShake;
 import com.jayjd.boxtop.receiver.UsbBroadcastReceiver;
 import com.jayjd.boxtop.utils.AppsUtils;
 import com.jayjd.boxtop.utils.BlurCompat;
+import com.jayjd.boxtop.utils.DotContainerUtils;
 import com.jayjd.boxtop.utils.NetworkMonitor;
 import com.jayjd.boxtop.utils.SPUtils;
 import com.jayjd.boxtop.utils.ToolUtils;
@@ -245,6 +255,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
     private List<AppInfo> hiddenApps = new ArrayList<>();
     ImageView wallPager;
     TextView functionTitle;
+    ViewPager2 viewPagerCards;
     CpuMonitor cpuMonitor;
 
     private void initWallPager() {
@@ -468,11 +479,71 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         networkMonitor.register();
     }
 
+    @NonNull
+    private static List<Fragment> getFragments() {
+        List<Fragment> fragments = new ArrayList<>();
+        fragments.add(new CardWeather());
+        fragments.add(new CardStorage());
+        fragments.add(new CardPerformance());
+        fragments.add(new CardDevice());
+        fragments.add(new CardConnectivity());
+        fragments.add(new CardSystem());
+        return fragments;
+    }
+
     private void initView() {
         wallPager = findViewById(R.id.wall_pager);
         // 功能区域
         LinearLayout functionContainer = findViewById(R.id.function_container);
         functionTitle = findViewById(R.id.function_title);
+        viewPagerCards = findViewById(R.id.view_pager_cards);
+        LinearLayout dotContainer = findViewById(R.id.dot_container);
+        FrameLayout viewPagerContainer = findViewById(R.id.view_pager_container);
+        List<Fragment> fragments = getFragments();
+        DotContainerUtils.bindViewPager(viewPagerCards, dotContainer, fragments.size());
+        InfoCardPagerAdapter infoCardPagerAdapter = new InfoCardPagerAdapter(this, fragments);
+        viewPagerCards.setAdapter(infoCardPagerAdapter);
+        viewPagerContainer.setOnFocusChangeListener((v, hasFocus) -> {
+            float scale = hasFocus ? 1.05f : 1.0f;
+            v.animate()
+                    .scaleX(scale)
+                    .scaleY(scale)
+                    .setDuration(150)
+                    .start();
+            v.setElevation(hasFocus ? 20f : 0f);
+        });
+        // ❗TV 必须关掉用户滑动（用遥控器控制）
+        viewPagerCards.setUserInputEnabled(false);
+
+        // 预加载（避免切换卡顿）
+        viewPagerCards.setOffscreenPageLimit(fragments.size());
+
+        viewPagerContainer.setOnKeyListener((v, keyCode, event) -> {
+            if (event.getAction() != KeyEvent.ACTION_DOWN) {
+                return false;
+            }
+
+            int current = viewPagerCards.getCurrentItem();
+
+            if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                if (current < infoCardPagerAdapter.getItemCount() - 1) {
+                    viewPagerCards.setCurrentItem(current + 1, true);
+                }
+                return true; // ✅ 消费事件
+            } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                if (current > 0) {
+                    viewPagerCards.setCurrentItem(current - 1, true);
+                    return true; // ✅ 消费事件
+                }
+            }
+            return false; // ❗ 其他情况放行
+        });
+
+        viewPagerCards.setPageTransformer((page, position) -> {
+            float scale = 0.9f + (1 - Math.abs(position)) * 0.1f;
+            page.setScaleX(scale);
+            page.setScaleY(scale);
+        });
 
 
         // 顶部设置按钮

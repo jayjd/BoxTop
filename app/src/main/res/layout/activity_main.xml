@@ -307,23 +307,37 @@
                 tools:listitem="@layout/item_function" />
         </LinearLayout>
 
-        <com.owen.tvrecyclerview.widget.TvRecyclerView
-            android:id="@+id/view_pager"
+        <FrameLayout
+            android:id="@+id/view_pager_container"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:background="@drawable/bg_blur_card"
-            android:clipToOutline="true"
-            android:padding="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintDimensionRatio="1.5:1"
+            app:layout_constraintDimensionRatio="16:9"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias=".1"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias=".1"
-            app:layout_constraintWidth_percent=".45"
-            tools:targetApi="31" />
+            app:layout_constraintWidth_percent=".4">
 
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/view_pager_cards"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:targetApi="31" />
+
+            <LinearLayout
+                android:id="@+id/dot_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end|bottom"
+                android:focusable="false"
+                android:orientation="horizontal"
+                android:padding="8dp" />
+        </FrameLayout>
 
         <com.owen.tvrecyclerview.widget.TvRecyclerView
             android:id="@+id/favorite_apps_grid"
