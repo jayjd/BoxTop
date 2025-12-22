@@ -10,13 +10,14 @@
         android:id="@+id/all_apps_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/bg_blur_card"
-        android:padding="8dp"
+        android:background="@drawable/dialog_bg_premium"
         android:orientation="vertical"
+        android:padding="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
+
         <TextView
             android:id="@+id/all_apps_title"
             android:layout_width="wrap_content"

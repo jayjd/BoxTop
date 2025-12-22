@@ -93,59 +93,7 @@
                 tools:itemCount="6"
                 tools:listitem="@layout/activity_settings_icon_item" />
         </androidx.constraintlayout.widget.ConstraintLayout>
-        <!--功能区域-->
-        <LinearLayout
-            android:id="@+id/function_container"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:background="@drawable/bg_blur_card"
-            android:clipToOutline="true"
-            android:orientation="vertical"
-            android:padding="8dp"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintDimensionRatio="1.5:1"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias=".1"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias=".1"
-            app:layout_constraintWidth_percent=".45">
-
-            <ScrollView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/function_title"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingHorizontal="8dp"
-                        android:text="功能"
-                        android:textColor="@color/md_theme_onSurface"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-            </ScrollView>
-
-            <com.owen.tvrecyclerview.widget.TvRecyclerView
-                android:id="@+id/function_grid"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                app:spanCount="4"
-                app:tv_horizontalSpacingWithMargins="8dp"
-                app:tv_selectedItemIsCentered="true"
-                app:tv_verticalSpacingWithMargins="8dp"
-                tools:listitem="@layout/item_function" />
-        </LinearLayout>
-
+        <!--分页指示器-->
         <LinearLayout
             android:id="@+id/dot_container"
             android:layout_width="wrap_content"
@@ -155,7 +103,7 @@
             app:layout_constraintEnd_toEndOf="@id/view_pager_container"
             app:layout_constraintStart_toStartOf="@id/view_pager_container"
             app:layout_constraintTop_toBottomOf="@id/view_pager_container" />
-
+        <!--卡片区域-->
         <FrameLayout
             android:id="@+id/view_pager_container"
             android:layout_width="0dp"

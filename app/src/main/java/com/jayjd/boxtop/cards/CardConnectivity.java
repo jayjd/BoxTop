@@ -112,18 +112,17 @@ public class CardConnectivity extends BaseCardFragment {
     }
 
     // 信号强度（简单示意，实际可用 WifiManager 获取 RSSI）
-    @SuppressLint("MissingPermission")
     private String getSignalStrength() {
         try {
             WifiManager wm = (WifiManager) requireContext().getApplicationContext()
                     .getSystemService(Context.WIFI_SERVICE);
             if (wm == null || !wm.isWifiEnabled()) {
-                return "未连接";
+                return "未连接1";
             }
 
             WifiInfo info = wm.getConnectionInfo();
-            if (info == null || info.getNetworkId() == -1) {
-                return "未连接";
+            if (info == null) {
+                return "未连接2";
             }
 
             int rssi = info.getRssi(); // RSSI 单位 dBm
@@ -143,7 +142,6 @@ public class CardConnectivity extends BaseCardFragment {
         }
     }
 
-    @SuppressLint("MissingPermission")
     private String getWifiSpeed() {
         try {
             WifiManager wm = (WifiManager) requireContext().getApplicationContext()
@@ -168,7 +166,7 @@ public class CardConnectivity extends BaseCardFragment {
                     .getSystemService(Context.WIFI_SERVICE);
             if (wm != null && wm.isWifiEnabled()) {
                 WifiInfo info = wm.getConnectionInfo();
-                if (info != null && info.getNetworkId() != -1) {
+                if (info != null) {
                     String ssid = info.getSSID();
                     if (ssid != null) {
                         ssid = ssid.replace("\"", ""); // 去掉双引号

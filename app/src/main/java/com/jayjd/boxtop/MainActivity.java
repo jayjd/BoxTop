@@ -84,14 +84,11 @@ import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
 import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -249,7 +246,6 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
     });
     private List<AppInfo> hiddenApps = new ArrayList<>();
     ImageView wallPager;
-    TextView functionTitle;
     ViewPager2 viewPagerCards;
     CpuMonitor cpuMonitor;
 
@@ -481,14 +477,14 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         return fragments;
     }
 
+    FrameLayout viewPagerContainer;
+
     private void initView() {
         wallPager = findViewById(R.id.wall_pager);
         // 功能区域
-        LinearLayout functionContainer = findViewById(R.id.function_container);
-        functionTitle = findViewById(R.id.function_title);
         viewPagerCards = findViewById(R.id.view_pager_cards);
         LinearLayout dotContainer = findViewById(R.id.dot_container);
-        FrameLayout viewPagerContainer = findViewById(R.id.view_pager_container);
+        viewPagerContainer = findViewById(R.id.view_pager_container);
         List<Fragment> fragments = getFragments();
         DotContainerUtils.bindViewPager(viewPagerCards, dotContainer, fragments.size());
         InfoCardPagerAdapter infoCardPagerAdapter = new InfoCardPagerAdapter(this, fragments);
@@ -860,113 +856,6 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         }
     }
 
-    public void startCpuMonitor() {
-        Log.d(TAG, "startCpuMonitor: 又开始了！");
-        displayOneTimeCpuInfo();
-        cpuMonitor.startMonitoring(1000, new CpuMonitor.CpuUsageListener() {
-            @Override
-            public void onSystemCpuUsage(float usage) {
-                runOnUiThread(() -> {
-                    updateCpuDisplay("system", usage);
-                });
-            }
-
-            @Override
-            public void onAppCpuUsage(float usage) {
-                runOnUiThread(() -> {
-                    updateCpuDisplay("app", usage);
-                });
-            }
-
-            @Override
-            public void onPerCoreCpuUsage(List<Float> usages) {
-                runOnUiThread(() -> {
-                    updateCpuDisplay("cores", 0, usages);
-                });
-            }
-        });
-    }
-
-    private void updateCpuDisplay(String type, float value) {
-        updateCpuDisplay(type, value, null);
-    }
-
-    @SuppressLint("DefaultLocale")
-    private void updateCpuDisplay(String type, float value, List<Float> coreUsages) {
-        String currentText = functionTitle.getText().toString();
-        String[] lines = currentText.split("\n");
-        StringBuilder updatedText = new StringBuilder();
-
-        for (int i = 0; i < lines.length; i++) {
-            String line = lines[i];
-
-            // 更新系统CPU
-            if (line.contains("系统CPU:") && "system".equals(type)) {
-                line = String.format("├─ 系统CPU: %.1f%%", value);
-            }
-            // 更新应用CPU
-            else if (line.contains("应用CPU:") && "app".equals(type)) {
-                line = String.format("├─ 应用CPU: %.1f%%", value);
-            }
-            // 更新核心CPU
-            else if (line.contains("核心CPU:") && "cores".equals(type) && coreUsages != null) {
-                StringBuilder coreStr = new StringBuilder();
-                for (int j = 0; j < coreUsages.size(); j++) {
-                    if (j > 0) coreStr.append(", ");
-                    coreStr.append(String.format("%.0f%%", coreUsages.get(j)));
-                }
-                line = "└─ 核心CPU: [" + coreStr.toString() + "]";
-            }
-            // 更新最后更新时间
-            else if (line.contains("最后更新:")) {
-                SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
-                String time = sdf.format(new Date());
-                line = "⏰ 最后更新: " + time;
-            }
-
-            updatedText.append(line);
-            if (i < lines.length - 1) {
-                updatedText.append("\n");
-            }
-        }
-        functionTitle.setText(updatedText.toString());
-    }
-
-    private void displayOneTimeCpuInfo() {
-        // 获取一次性的CPU信息
-        CpuMonitor.CpuInfo cpuInfo = cpuMonitor.getCpuInfo();
-        StringBuilder displayText = new StringBuilder();
-        // 标题
-        displayText.append("🔧 CPU监控面板\n");
-        displayText.append("══════════════════════\n\n");
-        displayText.append("⏰ 最后更新: 未开始监控");
-        // 实时监控区域（初始占位）
-        displayText.append("⏱ 实时监控:\n");
-        displayText.append("├─ 系统CPU: 等待数据...\n");
-        displayText.append("├─ 应用CPU: 等待数据...\n");
-        displayText.append("└─ 核心CPU: 等待数据...\n\n");
-
-        // 系统信息
-        displayText.append("📊 系统信息:\n");
-        displayText.append("├─ 系统版本: Android ").append(Build.VERSION.RELEASE).append("\n");
-        displayText.append("├─ CPU型号: ").append(cpuInfo.cpuModel).append("\n");
-        displayText.append("├─ CPU核心: ").append(cpuInfo.cpuCores).append(" 核\n");
-        displayText.append("├─ 总内存: ").append(String.format("%.2f", cpuInfo.totalMemory / 1024.0 / 1024.0 / 1024.0)).append(" GB\n");
-        displayText.append("└─ 已用内存: ").append(String.format("%.2f", cpuInfo.usedMemory / 1024.0 / 1024.0 / 1024.0)).append(" GB\n\n");
-
-
-        // CPU频率
-        if (cpuInfo.cpuFrequencies != null && cpuInfo.cpuFrequencies.length > 0) {
-            displayText.append("📈 CPU频率(MHz):\n");
-            for (int i = 0; i < cpuInfo.cpuFrequencies.length; i++) {
-                displayText.append(String.format("├─ Core%d: %d\n", i, cpuInfo.cpuFrequencies[i]));
-            }
-            displayText.append("\n");
-        }
-        // 显示到TextView
-        functionTitle.setText(displayText.toString());
-    }
-
     @SuppressLint("NotifyDataSetChanged")
     private void initData() {
 
@@ -1170,6 +1059,9 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             return true;
         } else if (viewAction == View.FOCUS_UP && gridType == 2) {
             showHomeApps();
+            return true;
+        } else if (viewAction == View.FOCUS_DOWN && gridType == 0) {
+            viewPagerContainer.requestFocus();
             return true;
         }
         Log.d(TAG, "animateType: 下放控件");
