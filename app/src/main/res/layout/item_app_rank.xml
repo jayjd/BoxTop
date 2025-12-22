@@ -58,7 +58,7 @@
         app:layout_constraintEnd_toStartOf="@id/bar_container"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toEndOf="@id/app_icon"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toTopOf="@id/app_icon"
         app:layout_constraintVertical_bias="0"
         app:layout_constraintWidth_percent=".25" />
     <!-- 次数 -->

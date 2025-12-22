@@ -25,44 +25,72 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <!-- 内容容器 -->
-        <ScrollView
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/info_container"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="12dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_title">
 
-            <LinearLayout
-                android:id="@+id/info_container"
-                android:layout_width="match_parent"
+            <include
+                android:id="@+id/row_device_name"
+                layout="@layout/item_device_info_row"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toTopOf="@id/row_system_type"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <include
+                android:id="@+id/row_system_type"
+                layout="@layout/item_device_info_row"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toTopOf="@id/row_android_version"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/row_device_name" />
+
+            <include
+                android:id="@+id/row_android_version"
+                layout="@layout/item_device_info_row"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toTopOf="@id/row_resolution"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/row_system_type" />
+
+            <include
+                android:id="@+id/row_resolution"
+                layout="@layout/item_device_info_row"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toTopOf="@id/row_model"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/row_android_version" />
+
+            <include
+                android:id="@+id/row_model"
+                layout="@layout/item_device_info_row"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/row_resolution" />
+
+            <!-- 设置垂直链 -->
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline_top"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                app:layout_constraintGuide_begin="0dp" />
 
-                <include
-                    android:id="@+id/row_device_name"
-                    layout="@layout/item_device_info_row" />
-
-                <include
-                    android:id="@+id/row_system_type"
-                    layout="@layout/item_device_info_row" />
-
-                <include
-                    android:id="@+id/row_android_version"
-                    layout="@layout/item_device_info_row" />
-
-                <include
-                    android:id="@+id/row_resolution"
-                    layout="@layout/item_device_info_row" />
-
-                <include
-                    android:id="@+id/row_model"
-                    layout="@layout/item_device_info_row" />
-
-            </LinearLayout>
-
-        </ScrollView>
-
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

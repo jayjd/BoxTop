@@ -8,6 +8,7 @@ import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.chad.library.adapter4.BaseQuickAdapter;
@@ -19,10 +20,23 @@ import com.jayjd.boxtop.utils.ToolUtils;
 public class AppUsageRankAdapter extends BaseQuickAdapter<AppInfo, QuickViewHolder> {
     long maxCount = 0;
 
+    private int itemHeight = 0; // 新增字段
+
     @NonNull
     @Override
     protected QuickViewHolder onCreateViewHolder(@NonNull Context context, @NonNull ViewGroup viewGroup, int i) {
-        return new QuickViewHolder(R.layout.item_app_rank, viewGroup);
+        QuickViewHolder quickViewHolder = new QuickViewHolder(R.layout.item_app_rank, viewGroup);
+        if (itemHeight > 0) {
+            ViewGroup.LayoutParams lp = quickViewHolder.itemView.getLayoutParams();
+            if (lp == null) lp = new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, itemHeight);
+            else lp.height = itemHeight;
+            quickViewHolder.itemView.setLayoutParams(lp);
+        }
+        return quickViewHolder;
+    }
+
+    private int dp(View v, int dp) {
+        return (int) (dp * v.getResources().getDisplayMetrics().density);
     }
 
     @Override
@@ -54,7 +68,7 @@ public class AppUsageRankAdapter extends BaseQuickAdapter<AppInfo, QuickViewHold
         Glide.with(quickViewHolder.itemView).load(drawable).into(ivIcon);
 
         String displayText;
-        long count = appInfo.getOpenAppCount() * 10000;
+        long count = appInfo.getOpenAppCount();
         if (count >= 1_000_000) {
             displayText = String.format("使用:%.1fM", count / 1_000_000f);
         } else if (count >= 1_000) {
@@ -86,7 +100,8 @@ public class AppUsageRankAdapter extends BaseQuickAdapter<AppInfo, QuickViewHold
 
     }
 
-    private int dp(View v, int dp) {
-        return (int) (dp * v.getResources().getDisplayMetrics().density);
+    public void setItemHeight(int height) {
+        this.itemHeight = height;
+        notifyDataSetChanged();
     }
 }

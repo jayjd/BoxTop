@@ -22,13 +22,14 @@ public class CardSystem extends BaseCardFragment {
 
     AppUsageRankAdapter adapter;
     AllAppsInfoDao allAppsInfoDao;
+    TvRecyclerView recyclerView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View root = inflater.inflate(R.layout.fragment_card_system, container, false);
-        TvRecyclerView recyclerView = root.findViewById(R.id.rv_app_rank);
+        recyclerView = root.findViewById(R.id.rv_app_rank);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setItemAnimator(null);
 
@@ -36,7 +37,6 @@ public class CardSystem extends BaseCardFragment {
         allAppsInfoDao = instance.getAllAppsInfoDao();
         adapter = new AppUsageRankAdapter();
         recyclerView.setAdapter(adapter);
-
         return root;
     }
 
@@ -46,7 +46,15 @@ public class CardSystem extends BaseCardFragment {
         Log.d("CardSystem", "onFragmentVisible() called");
         new Thread(() -> {
             List<AppInfo> appInfoByOpenAppCountDesc = allAppsInfoDao.getAppInfoByOpenAppCountDesc();
-            requireActivity().runOnUiThread(() -> adapter.submitList(appInfoByOpenAppCountDesc));
+            requireActivity().runOnUiThread(() -> {
+                recyclerView.post(() -> {
+                    adapter.submitList(appInfoByOpenAppCountDesc);
+                    int recyclerHeight = recyclerView.getHeight();
+                    int itemCount = adapter.getItemCount() > 0 ? adapter.getItemCount() : 5; // 默认5行
+                    adapter.setItemHeight(recyclerHeight / itemCount);
+                });
+                adapter.notifyDataSetChanged();
+            });
         }).start();
     }
 
