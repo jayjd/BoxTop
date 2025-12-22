@@ -1,16 +1,15 @@
 package com.jayjd.boxtop.cards;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.fragment.app.Fragment;
-
 import com.jayjd.boxtop.R;
 
 
-public class CardStorage extends Fragment {
+public class CardStorage extends BaseCardFragment {
 
 
     @Override
@@ -18,5 +17,17 @@ public class CardStorage extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_card_storage, container, false);
+    }
+
+    @Override
+    protected void onFragmentVisible() {
+        super.onFragmentVisible();
+        Log.d("CardStorage", "onFragmentVisible() called");
+    }
+
+    @Override
+    protected void onFragmentInvisible() {
+        super.onFragmentInvisible();
+        Log.d("CardStorage", "onFragmentInvisible() called");
     }
 }

@@ -1,16 +1,15 @@
 package com.jayjd.boxtop.cards;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.fragment.app.Fragment;
-
 import com.jayjd.boxtop.R;
 
 
-public class CardSystem extends Fragment {
+public class CardSystem extends BaseCardFragment {
 
 
     @Override
@@ -18,5 +17,17 @@ public class CardSystem extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_card_system, container, false);
+    }
+
+    @Override
+    protected void onFragmentVisible() {
+        super.onFragmentVisible();
+        Log.d("CardSystem", "onFragmentVisible() called");
+    }
+
+    @Override
+    protected void onFragmentInvisible() {
+        super.onFragmentInvisible();
+        Log.d("CardSystem", "onFragmentInvisible() called");
     }
 }

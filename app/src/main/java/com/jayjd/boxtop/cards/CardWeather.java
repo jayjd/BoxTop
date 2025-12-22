@@ -1,21 +1,31 @@
 package com.jayjd.boxtop.cards;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.fragment.app.Fragment;
-
 import com.jayjd.boxtop.R;
 
 
-public class CardWeather extends Fragment {
+public class CardWeather extends BaseCardFragment {
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_card_weather, container, false);
+    }
+
+    @Override
+    protected void onFragmentVisible() {
+        super.onFragmentVisible();
+        Log.d("CardWeather", "onFragmentVisible() called");
+    }
+
+    @Override
+    protected void onFragmentInvisible() {
+        super.onFragmentInvisible();
+        Log.d("CardWeather", "onFragmentInvisible() called");
     }
 }

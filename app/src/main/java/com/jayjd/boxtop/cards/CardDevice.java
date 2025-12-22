@@ -1,13 +1,13 @@
 package com.jayjd.boxtop.cards;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.jayjd.boxtop.R;
@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class CardDevice extends Fragment {
+public class CardDevice extends BaseCardFragment {
 
     private TvRecyclerView rvDevices;
     private DeviceInfoAdapter adapter;
@@ -38,6 +38,18 @@ public class CardDevice extends Fragment {
         initData();
 
         return root;
+    }
+
+    @Override
+    protected void onFragmentVisible() {
+        super.onFragmentVisible();
+        Log.d("CardDevice", "onFragmentVisible() called");
+    }
+
+    @Override
+    protected void onFragmentInvisible() {
+        super.onFragmentInvisible();
+        Log.d("CardDevice", "onFragmentInvisible() called");
     }
 
     private void initRecyclerView(View root) {
