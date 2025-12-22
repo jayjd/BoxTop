@@ -26,6 +26,12 @@ public class CardStorage extends BaseCardFragment {
     private TextView tvStoragePercent;
     private TextView tvStorageSize;
 
+    // 新增 U 盘控件
+    private ProgressBar pbUsb;
+    private TextView tvUsbPercent;
+    private TextView tvUsbStatus;
+    private TextView tvUsbSize;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_card_storage, container, false);
@@ -38,6 +44,49 @@ public class CardStorage extends BaseCardFragment {
         pbStorage = view.findViewById(R.id.pb_storage);
         tvStoragePercent = view.findViewById(R.id.tv_storage_percent);
         tvStorageSize = view.findViewById(R.id.tv_storage_size);
+
+        pbUsb = view.findViewById(R.id.usb_storage);
+        tvUsbPercent = view.findViewById(R.id.tv_usb_percent);
+        tvUsbStatus = view.findViewById(R.id.tv_usb_status);
+        tvUsbSize = view.findViewById(R.id.tv_usb_size);
+    }
+
+    private void updateUsbStorage() {
+        File[] externalDirs = requireContext().getExternalFilesDirs(null);
+        File usbDir = null;
+        for (File dir : externalDirs) {
+            if (dir != null && Environment.isExternalStorageRemovable(dir)) {
+                usbDir = dir;
+                break;
+            }
+        }
+
+        if (usbDir != null && usbDir.exists()) {
+            StatFs statFs = new StatFs(usbDir.getPath());
+            long total = statFs.getTotalBytes();
+            long available = statFs.getAvailableBytes();
+            long used = total - available;
+            int percent = (int) ((used * 100f) / total);
+
+            pbUsb.setProgressDrawable(ContextCompat.getDrawable(requireContext(), getProgressDrawable(percent)));
+            pbUsb.setProgress(percent);
+            tvUsbPercent.setText(percent + "%");
+            tvUsbSize.setText(formatSize(used) + " / " + formatSize(total));
+            tvUsbSize.setVisibility(View.VISIBLE);
+
+            tvUsbStatus.setVisibility(View.GONE);
+
+            ObjectAnimator animator = ObjectAnimator.ofInt(pbUsb, "progress", 0, percent);
+            animator.setDuration(600);
+            animator.start();
+        } else {
+            // 未插入
+            tvUsbStatus.setVisibility(View.VISIBLE);
+            pbUsb.setProgress(0);
+            tvUsbPercent.setText("--");
+            tvUsbSize.setVisibility(View.GONE);
+            tvUsbStatus.setText("未插入");
+        }
     }
 
     private void updateInternalStorage() {
@@ -50,18 +99,16 @@ public class CardStorage extends BaseCardFragment {
             long usedBytes = totalBytes - availableBytes;
 
             int percent = (int) ((usedBytes * 100f) / totalBytes);
+            // 根据使用率变色（可选）
+            Drawable drawable = ContextCompat.getDrawable(requireContext(), getProgressDrawable(percent));
+            pbStorage.setProgressDrawable(drawable);
 
             // UI 更新
             pbStorage.setProgress(percent);
             tvStoragePercent.setText(percent + "%");
             tvStorageSize.setText(formatSize(usedBytes) + " / " + formatSize(totalBytes));
 
-            // 根据使用率变色（可选）
-            Drawable drawable = ContextCompat.getDrawable(requireContext(), getProgressDrawable(percent));
-            pbStorage.setProgressDrawable(drawable);
-
-            ObjectAnimator animator =
-                    ObjectAnimator.ofInt(pbStorage, "progress", 0, percent);
+            ObjectAnimator animator = ObjectAnimator.ofInt(pbStorage, "progress", 0, percent);
             animator.setDuration(600);
             animator.start();
         } catch (Exception e) {
@@ -89,6 +136,7 @@ public class CardStorage extends BaseCardFragment {
         super.onFragmentVisible();
         Log.d("CardStorage", "onFragmentVisible() called");
         updateInternalStorage();
+        updateUsbStorage();
     }
 
     @Override

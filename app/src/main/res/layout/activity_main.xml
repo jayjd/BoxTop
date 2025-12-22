@@ -172,10 +172,10 @@
                 android:id="@+id/dot_container"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="end|bottom"
+                android:layout_gravity="start|bottom"
                 android:focusable="false"
                 android:orientation="horizontal"
-                android:padding="8dp" />
+                android:padding="12dp" />
         </FrameLayout>
 
         <com.owen.tvrecyclerview.widget.TvRecyclerView

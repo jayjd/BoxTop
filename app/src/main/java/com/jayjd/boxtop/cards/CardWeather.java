@@ -33,7 +33,6 @@ public class CardWeather extends BaseCardFragment {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_card_weather, container, false);
         initView(rootView);
-        initData();
         return rootView;
     }
 
@@ -49,7 +48,7 @@ public class CardWeather extends BaseCardFragment {
 
         String city = (String) SPUtils.get(requireContext(), "city", "");
         if (city.isEmpty()) {
-            city = "保定涿州";
+            city = "长春";
         }
         String format = MessageFormat.format("https://api.weatherapi.com/v1/forecast.json?key=a3889a64f7d74c5590b12941252212&q={0}&days=1&aqi=yes&alerts=yes&lang=zh", city);
         OkGo.<String>get(format).execute(new StringCallback() {
@@ -81,7 +80,7 @@ public class CardWeather extends BaseCardFragment {
             @Override
             public void onError(Response<String> response) {
                 super.onError(response);
-
+                Log.e("TAG", "onError: ", response.getException());
             }
         });
 
@@ -103,6 +102,7 @@ public class CardWeather extends BaseCardFragment {
     protected void onFragmentVisible() {
         super.onFragmentVisible();
         Log.d("CardWeather", "onFragmentVisible() called");
+        initData();
     }
 
     @Override
