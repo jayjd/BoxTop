@@ -52,7 +52,7 @@ public class CardStorage extends BaseCardFragment {
     }
 
     private void updateUsbStorage() {
-        File[] externalDirs = requireContext().getExternalFilesDirs(null);
+        File[] externalDirs = appContext.getExternalFilesDirs(null);
         File usbDir = null;
         for (File dir : externalDirs) {
             if (dir != null && Environment.isExternalStorageRemovable(dir)) {
@@ -68,7 +68,7 @@ public class CardStorage extends BaseCardFragment {
             long used = total - available;
             int percent = (int) ((used * 100f) / total);
 
-            pbUsb.setProgressDrawable(ContextCompat.getDrawable(requireContext(), getProgressDrawable(percent)));
+            pbUsb.setProgressDrawable(ContextCompat.getDrawable(appContext, getProgressDrawable(percent)));
             pbUsb.setProgress(percent);
             tvUsbPercent.setText(percent + "%");
             tvUsbSize.setText(formatSize(used) + " / " + formatSize(total));
@@ -100,7 +100,7 @@ public class CardStorage extends BaseCardFragment {
 
             int percent = (int) ((usedBytes * 100f) / totalBytes);
             // 根据使用率变色（可选）
-            Drawable drawable = ContextCompat.getDrawable(requireContext(), getProgressDrawable(percent));
+            Drawable drawable = ContextCompat.getDrawable(appContext, getProgressDrawable(percent));
             pbStorage.setProgressDrawable(drawable);
 
             // UI 更新

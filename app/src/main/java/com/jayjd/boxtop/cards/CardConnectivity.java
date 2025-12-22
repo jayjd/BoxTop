@@ -1,13 +1,18 @@
 package com.jayjd.boxtop.cards;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,6 +20,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.core.content.ContextCompat;
 
 import com.jayjd.boxtop.R;
 
@@ -57,6 +64,121 @@ public class CardConnectivity extends BaseCardFragment {
         ivBluetooth = root.findViewById(R.id.iv_bluetooth);
     }
 
+    @SuppressLint("MissingPermission")
+    public static String getWifiSsid(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            return getSsidApi31(context);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            return getSsidApi29(context);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return getSsidApi26(context);
+        } else {
+            return getSsidLegacy(context);
+        }
+    }
+
+    // -----------------------------
+    // 工具方法
+    // -----------------------------
+    private void setRow(View row, String label, String value) {
+        if (row == null) return;
+
+        TextView tvLabel = row.findViewById(R.id.tv_label);
+        TextView tvValue = row.findViewById(R.id.tv_value);
+
+        tvLabel.setText(label);
+        tvValue.setText(value);
+    }
+
+    @SuppressLint("MissingPermission")
+    private static String getSsidLegacy(Context context) {
+        WifiManager wm = (WifiManager) context.getApplicationContext()
+                .getSystemService(Context.WIFI_SERVICE);
+        if (wm == null || !wm.isWifiEnabled()) return "未连接";
+
+        WifiInfo info = wm.getConnectionInfo();
+        return parseSsid(info);
+    }
+
+    @SuppressLint("MissingPermission")
+    private static String getSsidApi26(Context context) {
+        if (!hasLocationPermission(context)) {
+            return "Wi-Fi 已连接";
+        }
+
+        WifiManager wm = context.getApplicationContext()
+                .getSystemService(WifiManager.class);
+        WifiInfo info = wm != null ? wm.getConnectionInfo() : null;
+        return parseSsid(info);
+    }
+
+    @SuppressLint("MissingPermission")
+    private static String getSsidApi29(Context context) {
+        if (!hasLocationPermission(context)) {
+            return "Wi-Fi 已连接";
+        }
+
+        ConnectivityManager cm =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        Network network = cm != null ? cm.getActiveNetwork() : null;
+        if (network == null) return "未连接";
+
+        NetworkCapabilities caps = cm.getNetworkCapabilities(network);
+        if (caps == null || !caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+            return "非 Wi-Fi";
+        }
+
+        WifiManager wm = context.getApplicationContext()
+                .getSystemService(WifiManager.class);
+        WifiInfo info = wm != null ? wm.getConnectionInfo() : null;
+        return parseSsid(info);
+    }
+
+    @SuppressLint("MissingPermission")
+    private static String getSsidApi31(Context context) {
+        if (!hasLocationPermission(context)) {
+            return "Wi-Fi 已连接";
+        }
+
+        ConnectivityManager cm =
+                context.getSystemService(ConnectivityManager.class);
+        Network network = cm != null ? cm.getActiveNetwork() : null;
+        if (network == null) return "未连接";
+
+        NetworkCapabilities caps = cm.getNetworkCapabilities(network);
+        if (caps == null || !caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+            return "非 Wi-Fi";
+        }
+
+        WifiManager wm = context.getApplicationContext()
+                .getSystemService(WifiManager.class);
+        WifiInfo info = wm != null ? wm.getConnectionInfo() : null;
+        return parseSsid(info);
+    }
+
+    private static boolean hasLocationPermission(Context context) {
+        return ContextCompat.checkSelfPermission(
+                context, Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(
+                context, Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private static String parseSsid(WifiInfo info) {
+        if (info == null) return "未连接";
+
+        String ssid = info.getSSID();
+        if (ssid == null || "<unknown ssid>".equals(ssid)) {
+            return "Wi-Fi 已连接";
+        }
+
+        if (ssid.startsWith("\"") && ssid.endsWith("\"")) {
+            ssid = ssid.substring(1, ssid.length() - 1);
+        }
+        return ssid;
+    }
+
     // -----------------------------
     // 填充信息
     // -----------------------------
@@ -64,9 +186,12 @@ public class CardConnectivity extends BaseCardFragment {
         // 网络状态
         String networkType = getNetworkType();
         String signalStrength = getSignalStrength();
-        setRow(rowNetworkState, "网络", networkType + " · " + signalStrength);
-
-        String ssid = getWifiSsid();
+        if (networkType.equals("Ethernet")) {
+            setRow(rowNetworkState, "网络", networkType);
+        } else {
+            setRow(rowNetworkState, "网络", networkType + " · " + signalStrength);
+        }
+        String ssid = getWifiSsid(appContext);
         setRow(rowSsid, "SSID", ssid);
 
         // 速率
@@ -86,22 +211,9 @@ public class CardConnectivity extends BaseCardFragment {
         ivBluetooth.setAlpha(bluetoothOn ? 1f : 0.4f);
     }
 
-    // -----------------------------
-    // 工具方法
-    // -----------------------------
-    private void setRow(View row, String label, String value) {
-        if (row == null) return;
-
-        TextView tvLabel = row.findViewById(R.id.tv_label);
-        TextView tvValue = row.findViewById(R.id.tv_value);
-
-        tvLabel.setText(label);
-        tvValue.setText(value);
-    }
-
     // 获取网络类型
     private String getNetworkType() {
-        ConnectivityManager cm = (ConnectivityManager) requireContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         if (activeNetwork != null && activeNetwork.isConnected()) {
             if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) return "Wi-Fi";
@@ -114,15 +226,15 @@ public class CardConnectivity extends BaseCardFragment {
     // 信号强度（简单示意，实际可用 WifiManager 获取 RSSI）
     private String getSignalStrength() {
         try {
-            WifiManager wm = (WifiManager) requireContext().getApplicationContext()
+            WifiManager wm = (WifiManager) appContext.getApplicationContext()
                     .getSystemService(Context.WIFI_SERVICE);
             if (wm == null || !wm.isWifiEnabled()) {
-                return "未连接1";
+                return "未连接";
             }
 
             WifiInfo info = wm.getConnectionInfo();
             if (info == null) {
-                return "未连接2";
+                return "未连接";
             }
 
             int rssi = info.getRssi(); // RSSI 单位 dBm
@@ -144,7 +256,7 @@ public class CardConnectivity extends BaseCardFragment {
 
     private String getWifiSpeed() {
         try {
-            WifiManager wm = (WifiManager) requireContext().getApplicationContext()
+            WifiManager wm = (WifiManager) appContext.getApplicationContext()
                     .getSystemService(Context.WIFI_SERVICE);
             if (wm != null && wm.isWifiEnabled()) {
                 WifiInfo info = wm.getConnectionInfo();
@@ -159,30 +271,10 @@ public class CardConnectivity extends BaseCardFragment {
         return "--";
     }
 
-    @SuppressLint("MissingPermission")
-    private String getWifiSsid() {
-        try {
-            WifiManager wm = (WifiManager) requireContext().getApplicationContext()
-                    .getSystemService(Context.WIFI_SERVICE);
-            if (wm != null && wm.isWifiEnabled()) {
-                WifiInfo info = wm.getConnectionInfo();
-                if (info != null) {
-                    String ssid = info.getSSID();
-                    if (ssid != null) {
-                        ssid = ssid.replace("\"", ""); // 去掉双引号
-                        return ssid;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return "未连接";
-    }
     // 获取 IP 地址（局域网 IPv4）
     private String getIpAddress() {
         try {
-            WifiManager wm = (WifiManager) requireContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            WifiManager wm = (WifiManager) appContext.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             if (wm != null) {
                 int ip = wm.getConnectionInfo().getIpAddress();
                 return String.format(Locale.US, "%d.%d.%d.%d", (ip & 0xff), (ip >> 8 & 0xff), (ip >> 16 & 0xff), (ip >> 24 & 0xff));

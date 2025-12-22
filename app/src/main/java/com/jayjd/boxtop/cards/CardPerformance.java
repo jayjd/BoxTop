@@ -30,7 +30,7 @@ public class CardPerformance extends BaseCardFragment {
         waveformView.init(3);
         waveformView.setLineColor(0, 0xFF4CAF50); // CPU
         waveformView.setLineColor(1, 0xFF2196F3); // 内存
-        cpuMonitor = CpuMonitor.getInstance(requireContext());
+        cpuMonitor = CpuMonitor.getInstance(appContext);
         return view;
     }
 

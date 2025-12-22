@@ -1,8 +1,10 @@
 package com.jayjd.boxtop.cards;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 public abstract class BaseCardFragment extends Fragment {
@@ -13,23 +15,39 @@ public abstract class BaseCardFragment extends Fragment {
     private boolean isDebouncing = false;
     private final Runnable debounceRunnable = () -> isDebouncing = false;
 
+    protected Context appContext;
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        appContext = context.getApplicationContext();
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        appContext = null;
+    }
     /* ---------------- 生命周期统一入口 ---------------- */
 
     @Override
     public void onResume() {
         super.onResume();
+        if (!isAdded() || getView() == null) return;
         tryDispatchVisible(true);
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        if (!isAdded() || getView() == null) return;
         tryDispatchVisible(false);
     }
 
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
+        if (!isAdded() || getView() == null) return;
         tryDispatchVisible(!hidden);
     }
 
@@ -58,10 +76,12 @@ public abstract class BaseCardFragment extends Fragment {
     /**
      * Fragment 真正对用户可见（推荐在这里开始刷新 / 注册广播）
      */
-    protected void onFragmentVisible() {}
+    protected void onFragmentVisible() {
+    }
 
     /**
      * Fragment 从用户视野消失（推荐在这里停止刷新 / 反注册）
      */
-    protected void onFragmentInvisible() {}
+    protected void onFragmentInvisible() {
+    }
 }

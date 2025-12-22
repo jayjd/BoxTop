@@ -33,7 +33,7 @@ public class CardSystem extends BaseCardFragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setItemAnimator(null);
 
-        AppDataBase instance = AppDataBase.getInstance(requireContext());
+        AppDataBase instance = AppDataBase.getInstance(appContext);
         allAppsInfoDao = instance.getAllAppsInfoDao();
         adapter = new AppUsageRankAdapter();
         recyclerView.setAdapter(adapter);

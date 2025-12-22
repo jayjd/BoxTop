@@ -8,7 +8,6 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.util.Log;
 
 import androidx.palette.graphics.Palette;
 
@@ -66,8 +65,8 @@ public class AppsUtils {
             // icon (图标)
             info.setAppIcon(app.loadIcon(packageManager));
             // isSystem (判断是否是系统应用)
-            // ApplicationInfo.FLAG_SYSTEM 用于标记系统应用
-            info.setSystem((app.flags & ApplicationInfo.FLAG_SYSTEM) != 0);
+            // ApplicationInfo.FLAG_SYSTEM 用于标记系统应用 1 是 0 否
+            info.setIsSystem((app.flags & ApplicationInfo.FLAG_SYSTEM) != 0 ? 1 : 0);
 
 
             // --- B. 需要通过 PackageInfo 获取的属性 ---
@@ -93,8 +92,6 @@ public class AppsUtils {
                 info.setTargetSdkVersion(app.targetSdkVersion);
                 AppType classify = PackageNameClassifier.classify(app, info);
                 info.setAppType(classify);
-                if (!info.isSystem())
-                    Log.d("TAG", "getAppsInfo: " + info.getAppType().getDisplayName() + " " + info.getName());
                 configAppIcon(context, info);
                 return info;
             } catch (Throwable ignored) {

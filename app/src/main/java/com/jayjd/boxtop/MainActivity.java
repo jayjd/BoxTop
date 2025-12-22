@@ -580,7 +580,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         appListAdapter.setOnItemLongClickListener((parent, view, position) -> {
             Log.d("MainActivity", "onItemChildLongClick position = " + position);
             AppInfo appInfo = parent.getItem(position);
-            if (appInfo.isSystem()) return false;
+            if (appInfo.getIsSystem() == 1) return false;
             return showAppSettingsDialog(parent, position, PreviewSettings.getAllAppsSettings());
         });
         appListAdapter.setOnItemClickListener((parent, view, position) -> {
@@ -604,7 +604,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         favoriteAppsAdapter.setOnItemLongClickListener((baseQuickAdapter, view, position) -> {
             Log.d("MainActivity", "onItemChildLongClick position = " + position);
             AppInfo item = baseQuickAdapter.getItem(position);
-            return showAppSettingsDialog(baseQuickAdapter, position, PreviewSettings.getFavoriteSettings(item.isSystem()));
+            return showAppSettingsDialog(baseQuickAdapter, position, PreviewSettings.getFavoriteSettings(item.getIsSystem() == 1));
         });
         favoriteAppsAdapter.setOnItemClickListener((baseQuickAdapter, view, i) -> {
             if (isMoveApp) {
@@ -691,7 +691,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         dialogAppIconAdapter.setOnItemLongClickListener((baseQuickAdapter, view2, i) -> {
             Log.d("MainActivity", "onItemChildLongClick position = " + i);
             AppInfo appInfo = baseQuickAdapter.getItem(i);
-            if (appInfo.isSystem()) return false;
+            if (appInfo.getIsSystem() == 1) return false;
             return showAppSettingsDialog(baseQuickAdapter, i, PreviewSettings.getAllAppsSettings());
         });
         dialogAppIconAdapter.setOnItemClickListener((baseQuickAdapter1, view1, i1) -> {
@@ -782,18 +782,18 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             switch (settings) {
                 case START:
                     AppUtils.launchApp(appInfo.getPackageName());
-                    if (!appInfo.isSystem())
+                    if (appInfo.getIsSystem() == 0)
                         sortData(appInfo);
                     break;
                 case VIEW:
                     AppUtils.launchAppDetailsSettings(appInfo.getPackageName());
                     break;
                 case SHOW:
-                    if (appInfo.isSystem()) {
+                    if (appInfo.getIsSystem() == 1) {
                         Toast.makeText(this, "系统应用无法显示", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    appInfo.setHidden(false);
+                    appInfo.setIsHidden(1);
                     appListAdapter.add(0, appInfo);
                     appListAdapter.notifyDataSetChanged();
                     parent.remove(appInfo);
@@ -801,7 +801,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
                     new Thread(() -> allAppsInfoDao.updateIsHiddenByPackageName(appInfo.getPackageName(), false)).start();
                     break;
                 case HIDE:
-                    if (appInfo.isSystem()) {
+                    if (appInfo.getIsSystem() == 1) {
                         Toast.makeText(this, "系统应用无法隐藏", Toast.LENGTH_SHORT).show();
                         return;
                     }
@@ -809,7 +809,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
                     favoriteAppsAdapter.notifyDataSetChanged();
                     appListAdapter.remove(appInfo);
                     appListAdapter.notifyDataSetChanged();
-                    appInfo.setHidden(true);
+                    appInfo.setIsHidden(0);
                     hiddenApps.add(appInfo);
                     new Thread(() -> {
                         favoriteAppInfoDao.deleteByPackageName(appInfo.getPackageName());
@@ -827,7 +827,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
                     new Thread(() -> favoriteAppInfoDao.deleteByPackageName(appInfo.getPackageName())).start();
                     break;
                 case UNINSTALL:
-                    if (appInfo.isSystem()) {
+                    if (appInfo.getIsSystem() == 1) {
                         Toast.makeText(this, "系统应用无法卸载", Toast.LENGTH_SHORT).show();
                         return;
                     }
@@ -884,7 +884,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             // 所有的应用列表 过滤掉系统应用和隐藏应用
             allApps = Lists.newArrayList(Iterables.filter(tempAllApps, appInfo -> {
                 if (appInfo != null) {
-                    return !appInfo.isSystem() && !appInfo.isHidden();
+                    return appInfo.getIsSystem() == 0 && appInfo.getIsHidden() == 0;
                 }
                 return false;
             }));
@@ -906,7 +906,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             }
 
             // 根据所有应用列表 过滤出系统应用 并移除系统不可启动的应用
-            systemApps = Lists.newArrayList(Iterables.filter(tempAllApps, AppAllInfo -> AppAllInfo != null && AppAllInfo.isSystem()));
+            systemApps = Lists.newArrayList(Iterables.filter(tempAllApps, AppAllInfo -> AppAllInfo != null && AppAllInfo.getIsSystem() == 1));
             Iterator<AppInfo> iterator = systemApps.iterator();
             while (iterator.hasNext()) {
                 AppInfo next = iterator.next();
@@ -916,7 +916,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
                 }
             }
             // 过滤出所有隐藏的应用列表
-            hiddenApps = Lists.newArrayList(Iterables.filter(tempAllApps, AppAllInfo -> AppAllInfo != null && AppAllInfo.isHidden()));
+            hiddenApps = Lists.newArrayList(Iterables.filter(tempAllApps, AppAllInfo -> AppAllInfo != null && AppAllInfo.getIsHidden() == 1));
             Log.d(TAG, "initData: 数据处理完成");
             runOnUiThread(() -> {
                 Log.d(TAG, "initData: 更新UI");
@@ -1061,6 +1061,9 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             showHomeApps();
             return true;
         } else if (viewAction == View.FOCUS_DOWN && gridType == 0) {
+            viewPagerContainer.requestFocus();
+            return true;
+        } else if (viewAction == View.FOCUS_UP && gridType == 1) {
             viewPagerContainer.requestFocus();
             return true;
         }

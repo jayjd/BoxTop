@@ -25,7 +25,7 @@ public interface AllAppsInfoDao {
     @Query("UPDATE app_info SET openAppCount = :openAppCount WHERE packageName = :packageName")
     void updateOpenAppCountByPackageName(String packageName, int openAppCount);
     // 查询 不是系统应用 boolean isSystem = false 不是隐藏应用 boolean isHidden = false 按照启动次数 降序排序
-    @Query("SELECT * FROM app_info WHERE isSystem = false AND isHidden = false ORDER BY openAppCount DESC")
+    @Query("SELECT * FROM app_info WHERE isSystem = 0 AND isHidden = 0 ORDER BY openAppCount DESC")
     List<AppInfo> getAppInfoByOpenAppCountDesc();
 
     // 根据包名修改排序

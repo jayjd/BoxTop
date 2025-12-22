@@ -41,7 +41,7 @@ public final class PackageNameClassifier {
         if (applicationInfo == null) return AppType.UNKNOWN;
         if (appInfo == null) return AppType.UNKNOWN;
 
-        if (appInfo.isSystem()) return AppType.SYSTEM;
+        if (appInfo.getIsSystem() == 1) return AppType.SYSTEM;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             AppType appType = map(applicationInfo.category);

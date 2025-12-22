@@ -59,11 +59,11 @@ public class CardDevice extends BaseCardFragment {
     }
 
     private boolean isGoogleTV() {
-        return requireContext().getPackageManager().hasSystemFeature("com.google.android.tv");
+        return appContext.getPackageManager().hasSystemFeature("com.google.android.tv");
     }
 
     private String getRamInfo() {
-        ActivityManager am = (ActivityManager) requireContext().getSystemService(Context.ACTIVITY_SERVICE);
+        ActivityManager am = (ActivityManager) appContext.getSystemService(Context.ACTIVITY_SERVICE);
 
         ActivityManager.MemoryInfo info = new ActivityManager.MemoryInfo();
         am.getMemoryInfo(info);

@@ -46,7 +46,7 @@ public class CardWeather extends BaseCardFragment {
 
     public void initData() {
 
-        String city = (String) SPUtils.get(requireContext(), "city", "");
+        String city = (String) SPUtils.get(appContext, "city", "");
         if (city.isEmpty()) {
             city = "长春";
         }
@@ -65,7 +65,7 @@ public class CardWeather extends BaseCardFragment {
                                 WeatherApiEntity.CurrentBean current = weatherApiEntity.getCurrent();
                                 tvTemperature.setText(Math.round(current.getTemp_c()) + "°");
                                 WeatherApiEntity.CurrentBean.ConditionBean condition = current.getCondition();
-                                Glide.with(requireContext()).load("https:" + condition.getIcon()).into(ivWeatherIcon);
+                                Glide.with(appContext).load("https:" + condition.getIcon()).into(ivWeatherIcon);
                                 tvWeatherDesc.setText(condition.getText() + " · 体感温度：" + Math.round(current.getFeelslike_c()) + "°");
                                 WeatherApiEntity.CurrentBean.AirQualityBean airQuality = current.getAir_quality();
                                 tvAirQuality.setText("空气质量：" + getAqiText(airQuality.getUsEpaIndex()) + " · PM2.5 " + airQuality.getPm2_5());
