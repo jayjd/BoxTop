@@ -9,7 +9,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/bg_weather_card"
+        android:background="@drawable/card_bg_device"
         android:clipToOutline="true"
         android:padding="16dp">
         <!-- 标题 -->
