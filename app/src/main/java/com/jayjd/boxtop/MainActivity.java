@@ -50,7 +50,6 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.gson.Gson;
 import com.jayjd.boxtop.adapter.AppIconAdapter;
 import com.jayjd.boxtop.adapter.InfoCardPagerAdapter;
 import com.jayjd.boxtop.adapter.PreviewSettingsAdapter;
@@ -66,7 +65,6 @@ import com.jayjd.boxtop.dao.FavoriteAppInfoDao;
 import com.jayjd.boxtop.database.AppDataBase;
 import com.jayjd.boxtop.entity.AppInfo;
 import com.jayjd.boxtop.entity.FavoriteApp;
-import com.jayjd.boxtop.entity.HotSearchEntity;
 import com.jayjd.boxtop.enums.PreviewSettings;
 import com.jayjd.boxtop.enums.TopSettingsIcons;
 import com.jayjd.boxtop.listeners.TvOnItemListener;
@@ -81,9 +79,6 @@ import com.jayjd.boxtop.utils.NetworkMonitor;
 import com.jayjd.boxtop.utils.SPUtils;
 import com.jayjd.boxtop.utils.ToolUtils;
 import com.jayjd.boxtop.utils.cpu.CpuMonitor;
-import com.lzy.okgo.OkGo;
-import com.lzy.okgo.callback.StringCallback;
-import com.lzy.okgo.model.Response;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
 import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
@@ -272,11 +267,6 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         }
     }
 
-    CategoryTvAdapter categoryMovieAdapter;
-    CategoryTvAdapter categoryTvAdapter;
-    CategoryTvAdapter categoryZongYiAdapter;
-    CategoryTvAdapter categoryDongManAdapter;
-    FrameLayout previewPanel;
 
     @Override
     protected void onResume() {
@@ -505,11 +495,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         viewPagerCards.setAdapter(infoCardPagerAdapter);
         viewPagerContainer.setOnFocusChangeListener((v, hasFocus) -> {
             float scale = hasFocus ? 1.05f : 1.0f;
-            v.animate()
-                    .scaleX(scale)
-                    .scaleY(scale)
-                    .setDuration(150)
-                    .start();
+            v.animate().scaleX(scale).scaleY(scale).setDuration(150).start();
             v.setElevation(hasFocus ? 20f : 0f);
         });
         // ❗TV 必须关掉用户滑动（用遥控器控制）
@@ -548,7 +534,6 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
 
         // 顶部设置按钮
         topSettingsBar = findViewById(R.id.top_settings_lists);
-        previewPanel = findViewById(R.id.preview_panel);
         // 常用的软件
         favoriteAppsContainer = findViewById(R.id.favorite_apps_container);
         favoriteAppsGrid = findViewById(R.id.favorite_apps_grid);
@@ -567,32 +552,6 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             allAppsContainer.setTranslationY(screenHeight);
             allAppsContainer.setVisibility(View.VISIBLE);
         });
-
-        TvRecyclerView movie = findViewById(R.id.movie);
-        TvRecyclerView tv = findViewById(R.id.tv);
-        TvRecyclerView zongyi = findViewById(R.id.zongyi);
-        TvRecyclerView dongman = findViewById(R.id.dongman);
-
-
-        movie.setLayoutManager(new V7LinearLayoutManager(this, V7LinearLayoutManager.VERTICAL, false));
-        tv.setLayoutManager(new V7LinearLayoutManager(this, V7LinearLayoutManager.VERTICAL, false));
-        zongyi.setLayoutManager(new V7LinearLayoutManager(this, V7LinearLayoutManager.VERTICAL, false));
-        dongman.setLayoutManager(new V7LinearLayoutManager(this, V7LinearLayoutManager.VERTICAL, false));
-
-        movie.setOnItemListener(new TvOnItemListener());
-        tv.setOnItemListener(new TvOnItemListener());
-        zongyi.setOnItemListener(new TvOnItemListener());
-        dongman.setOnItemListener(new TvOnItemListener());
-
-        categoryMovieAdapter = new CategoryTvAdapter();
-        categoryTvAdapter = new CategoryTvAdapter();
-        categoryZongYiAdapter = new CategoryTvAdapter();
-        categoryDongManAdapter = new CategoryTvAdapter();
-        movie.setAdapter(categoryMovieAdapter);
-        tv.setAdapter(categoryTvAdapter);
-        zongyi.setAdapter(categoryZongYiAdapter);
-        dongman.setAdapter(categoryDongManAdapter);
-
     }
 
     private void initListener() {
@@ -626,7 +585,6 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             Log.d("MainActivity", "onItemClick position = " + position);
             AppInfo appInfo = parent.getItem(position);
             if (appInfo.getPackageName().isEmpty()) {
-//                previewPanel.setVisibility(View.INVISIBLE);
                 if (appInfo.getName().equals("系统应用")) {
                     showSystemApps();
                 } else if (appInfo.getName().equals("壁纸")) {
@@ -742,8 +700,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         if (titleName.equals("应用设置")) styleId = R.style.CustomDialogTheme;
         else styleId = R.style.CustomAppDialogTheme;
         TextView allAppsTitle = rootView.findViewById(R.id.all_apps_title);
-        if (allAppsTitle != null)
-            allAppsTitle.setText(titleName);
+        if (allAppsTitle != null) allAppsTitle.setText(titleName);
         Dialog dialog = new Dialog(context, styleId);
         dialog.setContentView(rootView);
         dialog.setOnKeyListener((dialog1, keyCode, event) -> {
@@ -1058,67 +1015,6 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
                 favoriteAppsGrid.requestFocus();
             });
         }).start();
-
-        OkGo.<String>get("https://node.video.qq.com/x/api/hot_search").execute(new StringCallback() {
-            @Override
-            public void onSuccess(Response<String> response) {
-                try {
-                    if (response.isSuccessful()) {
-                        String body = response.body();
-                        Log.d(TAG, "onSuccess: " + body);
-                        HotSearchEntity hotSearchEntity = new Gson().fromJson(body, HotSearchEntity.class);
-                        if (hotSearchEntity != null) {
-                            HotSearchEntity.DataBean data = hotSearchEntity.getData();
-                            if (data.getErrCode() == 0) {
-                                HotSearchEntity.DataBean.MapResultBean mapResult = data.getMapResult();
-                                List<HotSearchEntity.DataBean.MapResultBean._$1Bean.ListInfoBeanX> movies = mapResult.get_$1().getListInfo();
-                                List<HotSearchEntity.DataBean.MapResultBean._$2Bean.ListInfoBeanXX> tvs = mapResult.get_$2().getListInfo();
-                                List<HotSearchEntity.DataBean.MapResultBean._$10Bean.ListInfoBeanXXXXXXX> zongyis = mapResult.get_$10().getListInfo();
-                                List<HotSearchEntity.DataBean.MapResultBean._$3Bean.ListInfoBeanXXX> dongmans = mapResult.get_$3().getListInfo();
-                                List<String> list1 = new ArrayList<>();
-                                for (HotSearchEntity.DataBean.MapResultBean._$1Bean.ListInfoBeanX movie : movies) {
-                                    list1.add(movie.getTitle());
-                                }
-                                List<String> list2 = new ArrayList<>();
-                                for (HotSearchEntity.DataBean.MapResultBean._$2Bean.ListInfoBeanXX movie : tvs) {
-                                    list2.add(movie.getTitle());
-                                }
-                                List<String> list3 = new ArrayList<>();
-                                for (HotSearchEntity.DataBean.MapResultBean._$10Bean.ListInfoBeanXXXXXXX movie : zongyis) {
-                                    list3.add(movie.getTitle());
-                                }
-                                List<String> list4 = new ArrayList<>();
-                                for (HotSearchEntity.DataBean.MapResultBean._$3Bean.ListInfoBeanXXX movie : dongmans) {
-                                    list4.add(movie.getTitle());
-                                }
-
-                                categoryMovieAdapter.setItems(list1);
-                                categoryTvAdapter.setItems(list2);
-                                categoryZongYiAdapter.setItems(list3);
-                                categoryDongManAdapter.setItems(list4);
-
-
-                                categoryMovieAdapter.notifyDataSetChanged();
-                                categoryTvAdapter.notifyDataSetChanged();
-                                categoryZongYiAdapter.notifyDataSetChanged();
-                                categoryDongManAdapter.notifyDataSetChanged();
-
-                                return;
-                            }
-                        }
-                    }
-                } catch (Exception ignored) {
-                }
-                Toast.makeText(MainActivity.this, "获取失败", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onError(Response<String> response) {
-                super.onError(response);
-                Toast.makeText(MainActivity.this, "获取异常", Toast.LENGTH_SHORT).show();
-            }
-        });
-
     }
 
     private void addFavoriteApp(@NonNull BaseQuickAdapter<AppInfo, ?> baseQuickAdapter, int i, AppIconAdapter favoriteAppsAdapter) {
@@ -1218,7 +1114,6 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
 
     private void showAllApps() {
         BlurCompat.setBlur(wallPager, allAppsContainer, 20);
-//        previewPanel.setVisibility(View.INVISIBLE);
         topSettingsBar.setVisibility(View.GONE);
         int screenHeight = ScreenUtils.getScreenHeight();
         Log.d(TAG, "showAllApps: " + screenHeight);
@@ -1229,7 +1124,6 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
 
     private void showHomeApps() {
         BlurCompat.cancelBlur(wallPager);
-//        previewPanel.setVisibility(View.VISIBLE);
         topSettingsBar.setVisibility(View.VISIBLE);
         int screenHeight = ScreenUtils.getScreenHeight();
         favoriteAppsContainer.animate().translationY(0).setDuration(500).start();
