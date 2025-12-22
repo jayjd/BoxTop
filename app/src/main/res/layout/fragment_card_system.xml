@@ -9,24 +9,35 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/bg_blur_card"
-        android:clipToOutline="true">
+        android:background="@drawable/bg_weather_card"
+        android:clipToOutline="true"
+        android:padding="16dp"
+        tools:targetApi="31">
 
+        <!-- 标题 -->
         <TextView
-            android:id="@+id/tv_device_name"
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="应用使用排行"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- 排行列表 -->
+        <com.owen.tvrecyclerview.widget.TvRecyclerView
+            android:id="@+id/rv_app_rank"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_gravity="center"
-            android:background="#FF9C27B0"
-            android:gravity="center"
-            android:text="Card System"
-            android:textColor="#FFFFFF"
-            android:textSize="28sp"
-            android:textStyle="bold"
+            android:padding="16dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/tv_title"
+            app:tv_verticalSpacingWithMargins="8dp"
+            tools:listitem="@layout/item_app_rank" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

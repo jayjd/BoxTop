@@ -30,6 +30,7 @@ public class AppInfo implements Serializable {
 
     private boolean isBanner;
 
+    private int openAppCount;
     private int sortIndex;
     private int cardColor;
     private String packagePath;

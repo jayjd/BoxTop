@@ -17,8 +17,8 @@ public interface FavoriteAppInfoDao {
     // 根据包名删除 收藏应用
     @Query("DELETE FROM favorite_app WHERE packageName = :packageName")
     void deleteByPackageName(String packageName);
-
-    @Query("SELECT DISTINCT a.* FROM app_info a JOIN favorite_app f ON a.packageName = f.packageName")
+    // sortIndex 排序
+    @Query("SELECT DISTINCT a.* FROM app_info a JOIN favorite_app f ON a.packageName = f.packageName ORDER BY a.sortIndex ASC")
     List<AppInfo> getFavoriteApps();
 
 }

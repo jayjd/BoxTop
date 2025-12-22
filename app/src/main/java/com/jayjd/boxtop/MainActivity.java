@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
                 if (topSettingsAdapter.itemIndexOfFirst(TopSettingsIcons.BLUETOOTH_ICON) == -1) {
                     List<TopSettingsIcons> items = topSettingsAdapter.getItems();
                     items.add(0, TopSettingsIcons.BLUETOOTH_ICON);
-                    topSettingsAdapter.setItems(items);
+                    topSettingsAdapter.submitList(items);
                     topSettingsAdapter.notifyDataSetChanged();
                 }
 
@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
                 if (index != -1) {
                     List<TopSettingsIcons> items = topSettingsAdapter.getItems();
                     items.remove(index);
-                    topSettingsAdapter.setItems(items);
+                    topSettingsAdapter.submitList(items);
                     topSettingsAdapter.notifyDataSetChanged();
                     Toast.makeText(MainActivity.this, "蓝牙已断开", Toast.LENGTH_SHORT).show();
                 }
@@ -167,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
 
             List<AppInfo> allApps = appListAdapter.getItems();
             allApps.add(0, appInfo);
-            appListAdapter.setItems(allApps);
+            appListAdapter.submitList(allApps);
             appListAdapter.notifyDataSetChanged();
 
             syncFavoriteOnAddOrUpdate(appInfo);
@@ -180,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             AppInfo appInfo = findByPackage(allApps, pkg);
             if (appInfo != null) {
                 allApps.remove(appInfo);
-                appListAdapter.setItems(allApps);
+                appListAdapter.submitList(allApps);
                 appListAdapter.notifyDataSetChanged();
             }
 
@@ -188,7 +188,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             AppInfo fav = findByPackage(favoriteApps, pkg);
             if (fav != null) {
                 favoriteApps.remove(fav);
-                favoriteAppsAdapter.setItems(favoriteApps);
+                favoriteAppsAdapter.submitList(favoriteApps);
                 favoriteAppsAdapter.notifyDataSetChanged();
                 new Thread(() -> {
                     favoriteAppInfoDao.deleteByPackageName(pkg);
@@ -209,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             if (old != null) {
                 allApps.remove(old);
                 allApps.add(0, appInfo);
-                appListAdapter.setItems(allApps);
+                appListAdapter.submitList(allApps);
                 appListAdapter.notifyDataSetChanged();
             }
 
@@ -241,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             newApp.setSortIndex(index);
             favoriteApps.add(index, newApp);
 
-            favoriteAppsAdapter.setItems(favoriteApps);
+            favoriteAppsAdapter.submitList(favoriteApps);
             favoriteAppsAdapter.notifyDataSetChanged();
 
             new Thread(() -> allAppsInfoDao.update(newApp)).start();
@@ -380,7 +380,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
                     if (index == -1) {
                         List<TopSettingsIcons> items = topSettingsAdapter.getItems();
                         items.add(TopSettingsIcons.BLUETOOTH_ICON);
-                        topSettingsAdapter.setItems(items);
+                        topSettingsAdapter.submitList(items);
                         topSettingsAdapter.notifyDataSetChanged();
                     }
                 }
@@ -416,7 +416,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         if (topSettingsAdapter.itemIndexOfFirst(icon) != -1) return;
         List<TopSettingsIcons> items = topSettingsAdapter.getItems();
         items.add(0, icon);
-        topSettingsAdapter.setItems(items);
+        topSettingsAdapter.submitList(items);
         topSettingsAdapter.notifyDataSetChanged();
     }
 
@@ -426,7 +426,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         if (index == -1) return;
         List<TopSettingsIcons> items = topSettingsAdapter.getItems();
         items.remove(index);
-        topSettingsAdapter.setItems(items);
+        topSettingsAdapter.submitList(items);
         topSettingsAdapter.notifyDataSetChanged();
     }
 
@@ -521,6 +521,12 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
                     viewPagerCards.setCurrentItem(current - 1, true);
                     return true; // ✅ 消费事件
                 }
+            } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+                topSettingsBar.requestFocus();
+                return true; // ✅ 消费事件
+            } else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+                favoriteAppsGrid.requestFocus();
+                return true; // ✅ 消费事件
             }
             return false; // ❗ 其他情况放行
         });
@@ -594,6 +600,8 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
                 }
             } else {
                 AppUtils.launchApp(appInfo.getPackageName());
+                // 根据 OpenAppCount 排序
+                sortData(appInfo);
             }
         });
 
@@ -623,19 +631,29 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
                     return false;
                 }));
                 tempAppList.addAll(tempAppList.size(), systemApps);
-                dialogAppIconAdapter.setItems(tempAppList);
+                dialogAppIconAdapter.submitList(tempAppList);
                 dialogAppIconAdapter.setOnItemClickListener((baseQuickAdapter1, view1, i1) -> addFavoriteApp(baseQuickAdapter1, i1, favoriteAppsAdapter));
                 allDialogGrid.setOnItemListener(new TvOnItemListener());
                 allDialogGrid.requestFocus();
                 showMaterialAlertDialog(this, "所有应用", inflate);
             } else {
                 AppUtils.launchApp(item.getPackageName());
+                // 根据 OpenAppCount 排序
+                sortData(item);
             }
         });
 
         topSettingsBar.setOnItemListener(new TvOnItemListener());
         appListGrid.setOnItemListener(new TvOnItemListener());
         favoriteAppsGrid.setOnItemListener(new TvOnItemListener());
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private void sortData(AppInfo appInfo) {
+        appInfo.setOpenAppCount(appInfo.getOpenAppCount() + 1);
+        Collections.sort(appListAdapter.getItems(), (o1, o2) -> Integer.compare(o2.getOpenAppCount(), o1.getOpenAppCount()));
+        appListAdapter.notifyDataSetChanged();
+        dbExecutor.execute(() -> allAppsInfoDao.updateOpenAppCountByPackageName(appInfo.getPackageName(), appInfo.getOpenAppCount()));
     }
 
     private void showWallPager() {
@@ -648,7 +666,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         allDialogGrid.setLayoutManager(new V7GridLayoutManager(this, 5));
         AppIconAdapter dialogAppIconAdapter = new AppIconAdapter();
         allDialogGrid.setAdapter(dialogAppIconAdapter);
-        dialogAppIconAdapter.setItems(hiddenApps);
+        dialogAppIconAdapter.submitList(hiddenApps);
         dialogAppIconAdapter.setOnItemLongClickListener((baseQuickAdapter, view2, i) -> {
             Log.d("MainActivity", "onItemChildLongClick position = " + i);
             return showAppSettingsDialog(baseQuickAdapter, i, PreviewSettings.getHideAppsSettings());
@@ -659,6 +677,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
                 return;
             }
             AppUtils.launchApp(item.getPackageName());
+            sortData(item);
         });
         allDialogGrid.setOnItemListener(new TvOnItemListener());
         allDialogGrid.requestFocus();
@@ -672,7 +691,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         allDialogGrid.setLayoutManager(new V7GridLayoutManager(this, 5));
         AppIconAdapter dialogAppIconAdapter = new AppIconAdapter();
         allDialogGrid.setAdapter(dialogAppIconAdapter);
-        dialogAppIconAdapter.setItems(systemApps);
+        dialogAppIconAdapter.submitList(systemApps);
         dialogAppIconAdapter.setOnItemLongClickListener((baseQuickAdapter, view2, i) -> {
             Log.d("MainActivity", "onItemChildLongClick position = " + i);
             AppInfo appInfo = baseQuickAdapter.getItem(i);
@@ -684,6 +703,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             if (item.getPackageName().isEmpty()) {
                 return;
             }
+            // 系统应用不参与排序
             AppUtils.launchApp(item.getPackageName());
         });
         allDialogGrid.setOnItemListener(new TvOnItemListener());
@@ -721,7 +741,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         return dialog;
     }
 
-    @SuppressLint("NotifyDataSetChanged")
+    @SuppressLint({"NotifyDataSetChanged", "SetTextI18n"})
     private boolean showAppSettingsDialog(BaseQuickAdapter<AppInfo, ?> parent, int position, PreviewSettings[] previewSettings) {
         AppInfo appInfo = parent.getItem(position);
         if (appInfo.getPackageName().isEmpty()) {
@@ -747,7 +767,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         }
         Glide.with(this).load(drawable).into(imageView);
         TextView previewTitle = inflate.findViewById(R.id.preview_title);
-        previewTitle.setText(appInfo.getName());
+        previewTitle.setText(appInfo.getName() + "(" + appInfo.getOpenAppCount() + ")");
         TextView previewDesc = inflate.findViewById(R.id.preview_desc);
         previewDesc.setText(appInfo.getPackageName());
 
@@ -759,13 +779,15 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         PreviewSettingsAdapter previewSettingsAdapter = new PreviewSettingsAdapter();
         previewSettingsRecyclerview.setAdapter(previewSettingsAdapter);
 
-        previewSettingsAdapter.setItems(Arrays.asList(previewSettings));
+        previewSettingsAdapter.submitList(Arrays.asList(previewSettings));
         previewSettingsRecyclerview.requestFocus();
         previewSettingsAdapter.setOnItemClickListener((baseQuickAdapter, view1, which) -> {
             PreviewSettings settings = baseQuickAdapter.getItem(which);
             switch (settings) {
                 case START:
                     AppUtils.launchApp(appInfo.getPackageName());
+                    if (!appInfo.isSystem())
+                        sortData(appInfo);
                     break;
                 case VIEW:
                     AppUtils.launchAppDetailsSettings(appInfo.getPackageName());
@@ -962,7 +984,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         appListGrid.setAdapter(appListAdapter);
         favoriteAppsGrid.setAdapter(favoriteAppsAdapter);
 
-        topSettingsAdapter.setItems(new ArrayList<>(List.of(TopSettingsIcons.getTopSettings())));
+        topSettingsAdapter.submitList(new ArrayList<>(List.of(TopSettingsIcons.getTopSettings())));
 
         new Thread(() -> {
             List<AppInfo> tempAllApps = allAppsInfoDao.getAllAppInfo();
@@ -977,16 +999,17 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
                 }
                 return false;
             }));
+            // 排序
+            Collections.sort(allApps, (o1, o2) -> {
+                int index1 = o1.getOpenAppCount();
+                int index2 = o2.getOpenAppCount();
+                return Integer.compare(index2, index1);
+            });
             allApps.add(allApps.size(), ToolUtils.getEmptyAppInfo("壁纸", ResourceUtils.getDrawable(R.drawable.ic_wall_art_24dp), Color.parseColor("#EF4444")));
             allApps.add(allApps.size(), ToolUtils.getEmptyAppInfo("隐私空间", ResourceUtils.getDrawable(R.drawable.ic_lock_24dp), Color.parseColor("#2B2F4A")));
             allApps.add(allApps.size(), ToolUtils.getEmptyAppInfo("系统应用", ResourceUtils.getDrawable(R.drawable.ic_apps_24dp), Color.parseColor("#0EA5E9")));
             // 从常用表根据包名获取详细的应用软件信息
             List<AppInfo> favoriteAppInfos = favoriteAppInfoDao.getFavoriteApps();
-            Collections.sort(favoriteAppInfos, (o1, o2) -> {
-                int index1 = o1.getSortIndex();
-                int index2 = o2.getSortIndex();
-                return Integer.compare(index1, index2);
-            });
             favoriteApps.addAll(favoriteAppInfos);
             favoriteApps.add(favoriteApps.size(), ToolUtils.getEmptyAppInfo("添加应用", ResourceUtils.getDrawable(R.drawable.ic_add_24dp), Color.parseColor("#263238")));
             for (AppInfo favoriteApp : favoriteApps) {
@@ -1008,9 +1031,9 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             Log.d(TAG, "initData: 数据处理完成");
             runOnUiThread(() -> {
                 Log.d(TAG, "initData: 更新UI");
-                appListAdapter.setItems(allApps);
+                appListAdapter.submitList(allApps);
                 appListAdapter.notifyDataSetChanged();
-                favoriteAppsAdapter.setItems(favoriteApps);
+                favoriteAppsAdapter.submitList(favoriteApps);
                 favoriteAppsAdapter.notifyDataSetChanged();
                 favoriteAppsGrid.requestFocus();
             });
