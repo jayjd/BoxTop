@@ -5,27 +5,67 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".cards.CardPerformance">
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/bg_blur_card"
-        android:clipToOutline="true">
+        android:background="@drawable/bg_weather_card"
+        android:clipToOutline="true"
+        android:padding="16dp">
 
+        <!-- CPU 标题 -->
         <TextView
-            android:id="@+id/tv_device_name"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_gravity="center"
-            android:background="#FF4CAF50"
-            android:gravity="center"
-            android:text="Card Performance"
+            android:id="@+id/tv_cpu_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CPU 使用率"
             android:textColor="#FFFFFF"
-            android:textSize="28sp"
+            android:textSize="24sp"
             android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+        <!-- 波形图容器 -->
+        <com.jayjd.boxtop.cards.tvdesktop.WaveformView
+            android:id="@+id/waveform_cpu"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_marginTop="16dp"
+            android:background="@android:color/transparent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_cpu_title" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/waveform_cpu">
+            <!-- CPU 百分比 -->
+            <TextView
+                android:id="@+id/system_cpu_percent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:text="系统: 0%"
+                android:textColor="#FF4CAF50"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/app_cpu_percent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:text="软件: 0%"
+                android:textColor="#FF2196F3"
+                android:textSize="18sp" />
+        </LinearLayout>
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
