@@ -48,6 +48,7 @@
                 android:layout_height="match_parent"
                 android:indeterminate="false"
                 android:max="100"
+                android:progress="0"
                 android:progressDrawable="@drawable/bg_storage_progress_ring" />
 
             <!-- 中心文字 -->
@@ -106,6 +107,7 @@
                 android:layout_height="match_parent"
                 android:indeterminate="false"
                 android:max="100"
+                android:progress="0"
                 android:progressDrawable="@drawable/bg_storage_progress_ring" />
 
             <!-- 中心文字 -->
