@@ -1,0 +1,448 @@
+:root {
+    --primary-color: #007bff;
+    --bg-color: #fff;
+    --title-color: #1a1a1a;
+    --border-color: #007bff;
+    --title-shadow: rgba(0, 0, 0, 0.1);
+    --btn-active-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    --modal-bg: #ffffff;  /* 添加亮色模式弹窗背景色 */
+}
+
+/* 修改标题样式 */
+.weui-form__title {
+    color: var(--title-color);
+    text-shadow: 0 2px 4px var(--title-shadow);
+    position: relative;
+    padding: 8px 0;
+}
+
+/* 新增标题装饰线 */
+.weui-form__title::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 2px;
+    background: var(--primary-color);
+    opacity: 0.8;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #2d2d2d;
+        --text-color: #f0f0f0;
+        --btn-bg: #3d3d3d;
+        --btn-hover-bg: #4d4d4d;
+        --border-color: #404040;
+        --primary-color: #007bff;
+        /* 调整主色调 */
+        --title-color: #f8f8f8;
+        --title-shadow: rgba(255, 255, 255, 0.1);
+        --modal-bg: #333333;  /* 添加暗色模式弹窗背景色 */
+    }
+    .input-field {
+        background-color: var(--btn-bg);
+        color: var(--text-color);
+        border-color: var(--border-color);
+    }
+
+    /* 设置 placeholder 颜色 */
+    .input-field::placeholder {
+        color: rgba(240, 240, 240, 0.6);
+    }
+
+    /* 设置 placeholder 在获得焦点时的颜色 */
+    .input-field:focus::placeholder {
+        color: rgba(240, 240, 240, 0.4);
+    }
+
+    /* 按钮悬停优化 */
+    .weui-btn:hover {
+        background: var(--btn-hover-bg);
+    }
+
+    /* 文字对比度优化 */
+    .weui-btn_default {
+        color: var(--text-color);
+        border: 1px solid var(--border-color);
+    }
+
+    /* 激活状态优化 */
+    .weui-btn:active {
+        background: var(--primary-color);
+    }
+
+    .content {
+        color: #e0e0e0 !important;
+    }
+
+    .gxzc {
+        color: #e0e0e0 !important;
+        margin-bottom: 16px;
+    }
+
+    .wechatTip {
+        color: #e0e0e0 !important;
+    }
+
+    /* 暗色模式下的说明面板样式 */
+    .instruction-content {
+        background-color: var(--card-bg);
+        color: var(--text-color);
+    }
+
+    .section-title {
+        color: var(--text-color);
+        /* 使用更亮的文本颜色 */
+        border-bottom-color: var(--primary-color);
+        /* 使用主色调 */
+    }
+
+    .instruction-list li {
+        color: var(--text-color);
+    }
+
+    .instruction-list li::before {
+        color: var(--primary-color);
+    }
+
+    .qrcode-section {
+        background-color: var(--card-bg);
+    }
+
+    .qrcode-item p {
+        color: var(--text-color);
+    }
+
+    .card {
+        box-shadow: 0 2px 8px var(--primary-color);
+    }
+}
+
+.gxzc {
+    color: #666;
+    margin-bottom: 16px "
+
+}
+
+/* 统一按钮基础样式 */
+.weui-btn {
+    transition: all 0.2s ease;
+    background: var(--btn-bg);
+    color: var(--text-color);
+    border-radius: 8px;
+    padding: 12px 24px;
+}
+
+/* 新增悬停光效 */
+.weui-btn:hover::after {
+    background: linear-gradient(120deg,
+            rgba(255, 255, 255, 0.1) 0%,
+            rgba(255, 255, 255, 0.2) 100%);
+}
+
+.weui-btn:active {
+    transform: translateY(2px);
+    box-shadow: var(--btn-active-shadow);
+}
+
+.weui-btn::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.weui-btn:hover::after {
+    opacity: 1;
+}
+
+/* 保持原有按钮样式 */
+.weui-btn_default {
+    background: var(--primary-color);
+    color: var(--text-color);
+}
+
+.weui-btn_warn {
+    background: #e64340;
+    color: white;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg-color);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 15px;
+}
+
+/* 导航选项卡 */
+.nav-tabs {
+    display: flex;
+    background: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 15px 0;
+    border: none;
+    background: none;
+    font-size: 16px;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.tab-button.active {
+    color: var(--primary-color);
+}
+
+.tab-button.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 3px;
+    background: var(--primary-color);
+    border-radius: 2px;
+}
+
+/* 卡片样式 */
+.card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+}
+
+.wechatTip {
+    color: #666;
+}
+
+.card-title {
+    font-size: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #333;
+}
+
+.input-field {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* 按钮基础样式 */
+.btn {
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--primary-color);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 按钮悬停效果 */
+.btn:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 按钮点击效果 */
+.btn:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* 按钮禁用状态 */
+.btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* 按钮波纹效果 */
+.btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 300%;
+    height: 300%;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 0.5s ease;
+}
+
+.btn:active::after {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+}
+
+/* 按钮组间距 */
+.btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn-row .btn {
+    flex: 1;
+}
+
+.file-input {
+    display: none;
+}
+
+.input-group {
+    padding-top: 15px;
+}
+
+/* 弹窗样式 */
+.modal-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+}
+
+.modal-content {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--modal-bg);
+    border-radius: 12px;
+    color: var(--text-color);;
+    padding: 20px;
+    width: 90%;
+    max-width: 400px;
+    z-index: 1001;
+}
+
+.info-section {
+    border: 1px solid #ccc;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    box-shadow: 10px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+
+/* 说明面板样式 */
+.instruction-content {
+    padding: 16px;
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+.instruction-section {
+    margin-bottom: 24px;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    color: var(--title-color);
+    /* 使用CSS变量 */
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+    /* 使用CSS变量 */
+}
+
+.instruction-list {
+    list-style: none;
+    padding-left: 20px;
+}
+
+.instruction-list li {
+    margin-bottom: 8px;
+    position: relative;
+    line-height: 1.6;
+}
+
+.instruction-list li::before {
+    content: "•";
+    color: var(--primary-color);
+    font-weight: bold;
+    display: inline-block;
+    width: 1em;
+    margin-left: -1em;
+}
+
+.qrcode-section {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 24px;
+}
+
+.qrcode-item {
+    text-align: center;
+}
+
+.qrcode-item img {
+    width: 50%;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.qrcode-item img:hover {
+    transform: scale(1.05);
+}
+
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+    .container {
+        padding: 10px;
+    }
+
+    .tab-button {
+        font-size: 14px;
+        padding: 12px 0;
+    }
+}

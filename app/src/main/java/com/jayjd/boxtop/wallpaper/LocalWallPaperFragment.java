@@ -1,16 +1,25 @@
 package com.jayjd.boxtop.wallpaper;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.jayjd.boxtop.R;
 import com.jayjd.boxtop.cards.BaseCardFragment;
 import com.jayjd.boxtop.listeners.TvOnItemListener;
 import com.jayjd.boxtop.listeners.ViewAnimationShake;
+import com.jayjd.boxtop.nanohttpd.ControlManager;
+import com.jayjd.boxtop.nanohttpd.QRCodeGen;
+import com.jayjd.boxtop.nanohttpd.interfas.DataReceiver;
 import com.jayjd.boxtop.utils.SPUtils;
 import com.jayjd.boxtop.wallpaper.adapter.LocalWallAdapter;
 import com.jayjd.boxtop.wallpaper.adapter.WallPaperUtils;
@@ -25,18 +34,58 @@ public class LocalWallPaperFragment extends BaseCardFragment {
     private LocalWallAdapter localWallAdapter;
     private TvRecyclerView localWallList;
 
+    ImageView ivQrCode;
+    TextView tvHttpAddress;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_local_wall_paper, container, false);
         initView(view);
+        initRemoteServer();
         return view;
+    }
+
+    private void initRemoteServer() {
+        ControlManager.get().startServer(new DataReceiver() {
+            @Override
+            public void onDouYuPush(String word) {
+
+            }
+
+            @Override
+            public void onHDKPush(String word) {
+
+            }
+
+            @Override
+            public void onTvLivePush(String word) {
+
+            }
+
+            @Override
+            public void onFanLivePush(String word) {
+
+            }
+
+            @Override
+            public void onCookiePush(String word) {
+
+            }
+
+            @Override
+            public void onInstallApk(Context context, String absoluteFile, String tmpFileItem) {
+
+            }
+        });
     }
 
     @SuppressLint("NotifyDataSetChanged")
     private void initView(View view) {
         localWallList = view.findViewById(R.id.local_wall_list);
+        ivQrCode = view.findViewById(R.id.iv_qr_code);
+        tvHttpAddress = view.findViewById(R.id.tv_http_address);
         localWallList.setLayoutManager(new V7LinearLayoutManager(appContext, V7LinearLayoutManager.HORIZONTAL, false));
         localWallAdapter = new LocalWallAdapter();
         localWallList.setAdapter(localWallAdapter);
@@ -80,15 +129,27 @@ public class LocalWallPaperFragment extends BaseCardFragment {
         List<File> localWallPaperList = WallPaperUtils.getLocalWallPaperList(appContext);
         localWallAdapter.submitList(localWallPaperList);
         localWallAdapter.notifyDataSetChanged();
+
+        String address = ControlManager.get().getAddress(false);
+        Bitmap bitmap = QRCodeGen.generateBitmap(address, 300, 300, 0, Color.WHITE, Color.TRANSPARENT);
+        Glide.with(appContext).load(bitmap).into(ivQrCode);
+        tvHttpAddress.setText(address);
     }
 
     @Override
     protected void onFragmentInvisible() {
         super.onFragmentInvisible();
     }
+
     @Override
     public void requestDefaultFocus() {
         super.requestDefaultFocus();
         localWallList.requestFocus();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        ControlManager.get().stopServer();
     }
 }

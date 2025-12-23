@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+	<head>
+		<meta charset="UTF-8">
+		<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+		<title>FUSE · 直播推送</title>
+		<link href="weui.css" rel="stylesheet" type="text/css">
+		<link href="style.css" rel="stylesheet" type="text/css">
+	</head>
+	<body>
+		<div class="container">
+			<!-- 导航选项卡 -->
+			<nav class="nav-tabs">
+				<button class="tab-button active" onclick="showTab(1)">推送</button>
+				<button class="tab-button" onclick="showTab(2)">说明</button>
+			</nav>
+
+			<!-- 推送面板 -->
+			<div class="tab-content" id="panel1">
+				<div class="card">
+					<div class="weui-form__text-area">
+						<h2 class="weui-form__title">FUSE · 直播推送</h2>
+					</div>
+					<div class="btn-row">
+						<button class="btn" onclick="window.open('http://jayjd.github.io', '_blank')">访问官网</button>
+						<button class="btn" onclick="window.open('https://pd.qq.com/s/21xn1v7wd', '_blank')">QQ频道</button>
+					</div>
+					<!-- 输入组 -->
+					<div class="input-group">
+						<input class="input-field" id="cookie_key_word" placeholder="支持虎牙、哔哩哔哩 Cookie" type="text">
+					</div>
+					<div class="btn-row">
+						<button class="btn" onclick="CookiePush()">推送Cookie</button>
+					</div>
+
+					<div class="input-group">
+						<input class="input-field" id="search_key_word" placeholder="DYu:房间号,Hy/DYin/Bili/YY/Twitch:直播地址..." type="text">
+					</div>
+					<div class="btn-row">
+						<button class="btn" onclick="HDKPush()">Hy/DYin/Bili/YY/Twitch推送</button>
+						<button class="btn" onclick="DouYuPush()">DYu推送</button>
+					</div>
+
+					<div class="input-group">
+						<input class="input-field" id="tv_key_word" placeholder="请输入在线源或TVBOX源地址" type="text">
+					</div>
+					<div class="btn-row">
+						<button class="btn" onclick="TvLivePush()">在线源</button>
+						<button class="btn" onclick="FanLivePush()">TVBOX源</button>
+					</div>
+
+					<div class="btn-row">
+						<button class="btn" onclick="downloadFile()">备份收藏</button>
+						<input class="file-input" id="file_uploader" multiple onchange="uploadTip()" type="file">
+						<button class="btn" onclick="uploadFile()">恢复收藏</button>
+					</div>
+					<div class="btn-row">
+						<button class="btn" onclick="uploadFile()">推送APP</button>
+						<button class="btn" onclick="uploadFile()">推送本地源</button>
+					</div>
+
+				</div>
+				<div class="card">
+                    <div style="text-align: center;">
+						<h3 class="gxzc">开发不易 · 感谢支持</h3>
+                        <div
+                            style="display: inline-block; padding: 16px; background: white; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: transform 0.2s ease;">
+                            <img alt="微信赞赏二维码" id="wechatQRCode" loading="lazy" onmouseout="this.style.transform='scale(1)'"
+                                onmouseover="this.style.transform='scale(1.05)'"
+                                src="wechat_reward_qrcode.jpg" style="width: 200px; height: 200px; border-radius: 16px; transition: transform 0.2s ease;">
+                        </div>
+                        <p style="color: #666; font-size: 14px; margin-top: 12px;">
+                            <span class="wechatTip">在微信中长按二维码 → 识别图中二维码</span>
+                        </p>
+                    </div>
+                </div>
+			</div>
+
+			<!-- 说明面板 -->
+			<div class="tab-content" id="panel2">
+				<div class="card">
+					<div class="weui-form__text-area">
+						<h2 class="weui-form__title">FUSE · 推送说明</h2>
+					</div>
+					<div class="instruction-content">
+						<div class="instruction-section">
+							<h3 class="section-title">播放控制</h3>
+							<ul class="instruction-list">
+								<li>【左键】猜你喜欢</li>
+								<li>【下键】【OK】切换线路/清晰度/画面比例/收藏</li>
+								<li>【右键】设置弹幕</li>
+								<li>【菜单键】启动搜索（仅限虎牙）</li>
+							</ul>
+						</div>
+
+						<div class="instruction-section">
+							<h3 class="section-title">收藏夹功能</h3>
+							<ul class="instruction-list">
+								<li>长按收藏夹可以清空收藏夹</li>
+								<li>长按收藏夹某个直播间可取消收藏</li>
+								<li>直播间【OK】点击已收藏可取消收藏</li>
+							</ul>
+						</div>
+
+						<div class="instruction-section">
+							<h3 class="section-title">直播推送</h3>
+							<ul class="instruction-list">
+								<li>备份收藏夹：点击备份收藏夹即可下载当前电视上收藏的直播间信息</li>
+								<li>恢复收藏夹：点击恢复收藏夹，选择备份的数据</li>
+								<li>安装应用：点击安装APK，选择要上传的APK</li>
+							</ul>
+						</div>
+
+						<div class="qrcode-section">
+							<div class="qrcode-item">
+								<p>Dy推送</p>
+								<img alt="Dy推送示例" src="dy.png">
+							</div>
+							<div class="qrcode-item">
+								<p>Hy推送</p>
+								<img alt="Hy推送示例" src="hy.png">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		<!-- 确认上传弹窗 -->
+		<div aria-hidden="true" aria-modal="true" id="uploadTip" role="dialog" style="display: none;">
+			<div class="modal-mask"></div>
+			<div class="modal-content">
+				<div class="weui-form__text-area">
+					<h2 class="weui-form__title">确认上传?</h2>
+				</div>
+				<div class="input-group" id="uploadTipContent"></div>
+				<div class="btn-row">
+					<button class="btn" onclick="doUpload(0)">取消</button>
+					<button class="btn" onclick="doUpload(1)">确定</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- 加载提示 -->
+		<div id="loadingToast" role="alert" style="display: none;">
+			<div class="modal-mask"></div>
+			<div class="modal-content">
+				<div class="weui-form__text-area">
+					<div class="input-group">
+						<span class="weui-primary-loading__dot"></span>
+						<p>加载中</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- 其他弹窗同样移除内联样式 -->
+		<div aria-hidden="true" aria-modal="true" id="uploadTipOk" role="dialog" style="display: none;">
+			<div class="modal-mask"></div>
+			<div class="modal-content">
+				<div class="weui-form__text-area">
+					<h2 class="weui-form__title">推送消息</h2>
+				</div>
+				<div class="input-group" id="uploadTipContentOk">推送成功</div>
+				<div class="btn-row">
+					<button class="btn" onclick="doUpload(0)">确定</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- 应用消息提示 -->
+		<div aria-hidden="true" aria-modal="true" id="uploadTipApk" role="dialog" style="display: none;">
+			<div class="modal-mask"></div>
+			<div class="modal-content">
+				<div class="weui-form__text-area">
+					<h2 class="weui-form__title">应用消息</h2>
+				</div>
+				<div class="input-group" id="uploadTipContentApk">上传成功</div>
+				<div class="btn-row">
+					<button class="btn" onclick="doUpload(0)">确定</button>
+				</div>
+			</div>
+		</div>
+
+
+		<!-- 其他弹窗保持结构不变 -->
+		<script src="jquery.js"></script>
+		<script src="script.js"></script>
+	</body>
+</html>

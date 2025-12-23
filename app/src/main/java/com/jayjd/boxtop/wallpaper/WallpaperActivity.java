@@ -15,6 +15,7 @@ import com.google.android.material.tabs.TabLayoutMediator;
 import com.jayjd.boxtop.R;
 import com.jayjd.boxtop.adapter.InfoCardPagerAdapter;
 import com.jayjd.boxtop.cards.BaseCardFragment;
+import com.jayjd.boxtop.nanohttpd.ControlManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -101,6 +102,7 @@ public class WallpaperActivity extends AppCompatActivity {
     }
 
     private void initView() {
+        ControlManager.init(this);
         wallPaperTabLayout = findViewById(R.id.wall_paper_tab_layout);
         wallPaperViewpager = findViewById(R.id.wall_paper_viewpager);
     }

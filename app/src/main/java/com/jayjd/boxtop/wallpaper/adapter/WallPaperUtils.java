@@ -12,6 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WallPaperUtils {
+    public static String getDownloadStringPath(Context context) {
+        return getLocalPath(context).getAbsolutePath();
+    }
+
     public static List<File> getLocalWallPaperList(Context context) {
         List<File> fileList = new ArrayList<>();
 

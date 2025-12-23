@@ -75,7 +75,12 @@ dependencies {
     implementation("com.github.bumptech.glide:okhttp3-integration:4.16.0") {
         exclude("com.android.support")
     }
-
+    implementation("org.nanohttpd:nanohttpd:2.3.1")
+//局域网http服务器搭建库
+    implementation("org.nanohttpd:nanohttpd-websocket:2.3.1")
+//局域网http服务器搭建库
+    implementation("com.google.zxing:core:3.5.4")
+//字符串生成二维码库
     //noinspection UseTomlInstead
     implementation("androidx.room:room-runtime:2.8.4")
     //noinspection UseTomlInstead
