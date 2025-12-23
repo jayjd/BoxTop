@@ -673,7 +673,6 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         } else {
             View inflate = LayoutInflater.from(this).inflate(R.layout.privacy_verify_password, null);
             Dialog dialog = showMaterialAlertDialog(this, "隐私空间 - 输入密码", inflate);
-            dialog.setCancelable(false);
             TextView etPassword = inflate.findViewById(R.id.et_password);
             Button btnConfirm = inflate.findViewById(R.id.btn_confirm);
             TextView tvError = inflate.findViewById(R.id.tv_error);
