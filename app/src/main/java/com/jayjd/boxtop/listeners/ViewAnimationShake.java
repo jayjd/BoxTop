@@ -15,23 +15,13 @@ import com.owen.tvrecyclerview.widget.TvRecyclerView;
 public class ViewAnimationShake implements TvRecyclerView.OnInBorderKeyEventListener {
     private final TvRecyclerView tvRecyclerView;
     private final Context context;
-    private final int gridType;
-    private final ViewAnimateListener viewAnimateListener;
     private Animation mShakeX;
 
     public ViewAnimationShake(TvRecyclerView tvRecyclerView, Context context) {
         this.tvRecyclerView = tvRecyclerView;
         this.context = context;
-        viewAnimateListener = null;
-        gridType = 0;
     }
 
-    public ViewAnimationShake(TvRecyclerView tvRecyclerView, Context context, int gridType, ViewAnimateListener viewAnimateListener) {
-        this.tvRecyclerView = tvRecyclerView;
-        this.context = context;
-        this.gridType = gridType;
-        this.viewAnimateListener = viewAnimateListener;
-    }
 
     private void shakeX(View currentFocused) {
         if (currentFocused != null && tvRecyclerView.getScrollState() == RecyclerView.SCROLL_STATE_IDLE) {
@@ -45,14 +35,7 @@ public class ViewAnimationShake implements TvRecyclerView.OnInBorderKeyEventList
 
     @Override
     public boolean onInBorderKeyEvent(int direction, View focused) {
-
         switch (direction) {
-            case View.FOCUS_UP:
-                if (viewAnimateListener != null)
-                    return viewAnimateListener.animateType(View.FOCUS_UP, gridType);
-            case View.FOCUS_DOWN:
-                if (viewAnimateListener != null)
-                    return viewAnimateListener.animateType(View.FOCUS_DOWN, gridType);
             case View.FOCUS_LEFT:
             case View.FOCUS_RIGHT:
                 boolean handled = false;

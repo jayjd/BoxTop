@@ -7,6 +7,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.jayjd.boxtop.utils.SPUtils;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,4 +50,7 @@ public class WallPaperUtils {
         return absoluteFile;
     }
 
+    public static String getDefaultWallpaper(Context appContext) {
+        return (String) SPUtils.get(appContext, "default_", "");
+    }
 }

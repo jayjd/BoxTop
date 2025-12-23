@@ -25,6 +25,13 @@
             android:orientation="vertical"
             app:layout_constraintGuide_percent="0.5" />
 
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_vertical_preview_3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.25" />
+
 
         <!-- 方法一：扫码 -->
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -149,15 +156,9 @@
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="@id/guideline_preview"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/guideline_preview">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="24dp"
-                android:text="✔ 支持 U 盘导入"
-                android:textColor="#AAAAAA"
-                android:textSize="16sp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -175,11 +176,46 @@
                 android:textSize="16sp" />
         </LinearLayout>
 
+        <!--默认壁纸-->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/local_wall_paper_container"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginHorizontal="8dp"
+            app:cardCornerRadius="20dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintDimensionRatio="16:9"
+            app:layout_constraintEnd_toEndOf="@id/guideline_vertical_preview_3"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/guideline_preview">
+
+            <ImageView
+                android:id="@+id/local_wall_pager_default"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop" />
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 默认标题 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:text="当前壁纸"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="@id/local_wall_paper_container"
+            app:layout_constraintStart_toStartOf="@id/local_wall_paper_container"
+            app:layout_constraintTop_toBottomOf="@id/local_wall_paper_container" />
+
+
         <!-- 壁纸横向列表 -->
         <com.owen.tvrecyclerview.widget.TvRecyclerView
             android:id="@+id/local_wall_list"
             android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_margin="8dp"
             android:background="@drawable/bg_blur_card"
             android:clipToPadding="false"
@@ -187,11 +223,13 @@
             android:focusableInTouchMode="true"
             android:orientation="horizontal"
             android:padding="16dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toStartOf="@id/guideline_vertical_preview_3"
             app:layout_constraintTop_toBottomOf="@id/guideline_preview"
             app:tv_horizontalSpacingWithMargins="16dp"
+            app:tv_selectedItemIsCentered="true"
             app:tv_verticalSpacingWithMargins="16dp"
             tools:listitem="@layout/activity_wall_pager_item" />
 

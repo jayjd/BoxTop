@@ -53,7 +53,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="8dp"
-            android:text="默认壁纸"
+            android:text="当前壁纸"
             android:textColor="@android:color/white"
             android:textSize="18sp"
             android:textStyle="bold"
@@ -101,34 +101,28 @@
             android:padding="16dp"
             app:layout_constraintBottom_toBottomOf="@id/wall_pager_container"
             app:layout_constraintEnd_toEndOf="@id/wall_pager_container" />
-        <!-- 壁纸列表背景卡片 -->
-        <View
-            android:id="@+id/bg_list_card"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginHorizontal="8dp"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/bg_blur_card"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/guideline_preview" />
+
 
         <!-- 壁纸横向列表 -->
         <com.owen.tvrecyclerview.widget.TvRecyclerView
             android:id="@+id/tr_wall_list"
             android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_blur_card"
             android:clipToPadding="false"
-            android:orientation="horizontal"
-            android:padding="16dp"
             android:focusable="true"
             android:focusableInTouchMode="true"
-            app:layout_constraintBottom_toBottomOf="@id/bg_list_card"
-            app:layout_constraintEnd_toEndOf="@id/bg_list_card"
-            app:layout_constraintStart_toStartOf="@id/bg_list_card"
-            app:layout_constraintTop_toTopOf="@id/bg_list_card"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/guideline_preview"
             app:tv_horizontalSpacingWithMargins="16dp"
+            app:tv_selectedItemIsCentered="true"
             app:tv_verticalSpacingWithMargins="16dp"
             tools:listitem="@layout/activity_wall_pager_item" />
 

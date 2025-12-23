@@ -21,6 +21,7 @@ import com.jayjd.boxtop.nanohttpd.ControlManager;
 import com.jayjd.boxtop.nanohttpd.QRCodeGen;
 import com.jayjd.boxtop.nanohttpd.interfas.DataReceiver;
 import com.jayjd.boxtop.utils.SPUtils;
+import com.jayjd.boxtop.utils.ToolUtils;
 import com.jayjd.boxtop.wallpaper.adapter.LocalWallAdapter;
 import com.jayjd.boxtop.wallpaper.adapter.WallPaperUtils;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
@@ -34,7 +35,7 @@ public class LocalWallPaperFragment extends BaseCardFragment {
     private LocalWallAdapter localWallAdapter;
     private TvRecyclerView localWallList;
 
-    ImageView ivQrCode;
+    ImageView ivQrCode, localWallPagerDefault;
     TextView tvHttpAddress;
 
     @Override
@@ -86,6 +87,7 @@ public class LocalWallPaperFragment extends BaseCardFragment {
         localWallList = view.findViewById(R.id.local_wall_list);
         ivQrCode = view.findViewById(R.id.iv_qr_code);
         tvHttpAddress = view.findViewById(R.id.tv_http_address);
+        localWallPagerDefault = view.findViewById(R.id.local_wall_pager_default);
         localWallList.setLayoutManager(new V7LinearLayoutManager(appContext, V7LinearLayoutManager.HORIZONTAL, false));
         localWallAdapter = new LocalWallAdapter();
         localWallList.setAdapter(localWallAdapter);
@@ -99,6 +101,12 @@ public class LocalWallPaperFragment extends BaseCardFragment {
             }
         });
         localWallList.setOnItemListener(new TvOnItemListener());
+        localWallAdapter.setOnItemClickListener((baseQuickAdapter, view2, i) -> {
+            File item = baseQuickAdapter.getItem(i);
+            SPUtils.put(appContext, "default_wallpaper", item.getAbsolutePath());
+            ToolUtils.initWallPager(appContext, localWallPagerDefault);
+            Toast.makeText(appContext, "壁纸已设为桌面壁纸", Toast.LENGTH_SHORT).show();
+        });
         localWallAdapter.setOnItemLongClickListener((baseQuickAdapter, view1, i) -> {
             File item = baseQuickAdapter.getItem(i);
             String defaultWallpaper = (String) SPUtils.get(appContext, "default_wallpaper", "");
@@ -119,6 +127,15 @@ public class LocalWallPaperFragment extends BaseCardFragment {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        String address = ControlManager.get().getAddress(false);
+        Bitmap bitmap = QRCodeGen.generateBitmap(address, 300, 300, 0, Color.WHITE, Color.TRANSPARENT);
+        Glide.with(appContext).load(bitmap).into(ivQrCode);
+        tvHttpAddress.setText(address);
+    }
+
+    @Override
     protected void onFragmentVisible() {
         super.onFragmentVisible();
         initData();
@@ -127,13 +144,11 @@ public class LocalWallPaperFragment extends BaseCardFragment {
     @SuppressLint("NotifyDataSetChanged")
     private void initData() {
         List<File> localWallPaperList = WallPaperUtils.getLocalWallPaperList(appContext);
-        localWallAdapter.submitList(localWallPaperList);
-        localWallAdapter.notifyDataSetChanged();
-
-        String address = ControlManager.get().getAddress(false);
-        Bitmap bitmap = QRCodeGen.generateBitmap(address, 300, 300, 0, Color.WHITE, Color.TRANSPARENT);
-        Glide.with(appContext).load(bitmap).into(ivQrCode);
-        tvHttpAddress.setText(address);
+        if (!localWallPaperList.isEmpty()) {
+            localWallAdapter.submitList(localWallPaperList);
+            localWallAdapter.notifyDataSetChanged();
+        }
+        ToolUtils.initWallPager(appContext, localWallPagerDefault);
     }
 
     @Override

@@ -72,7 +72,6 @@ import com.jayjd.boxtop.enums.PreviewSettings;
 import com.jayjd.boxtop.enums.TopSettingsIcons;
 import com.jayjd.boxtop.listeners.TvOnItemListener;
 import com.jayjd.boxtop.listeners.UsbDriveListener;
-import com.jayjd.boxtop.listeners.ViewAnimateListener;
 import com.jayjd.boxtop.listeners.ViewAnimationShake;
 import com.jayjd.boxtop.receiver.UsbBroadcastReceiver;
 import com.jayjd.boxtop.utils.AppsUtils;
@@ -96,7 +95,7 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-public class MainActivity extends AppCompatActivity implements ViewAnimateListener {
+public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     LinearLayout allAppsContainer;
     ConstraintLayout favoriteAppsContainer;
@@ -115,138 +114,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
 
     AppDataBase appDataBase;
     FavoriteAppInfoDao favoriteAppInfoDao;
-    private final UsbBroadcastReceiver usbReceiver = new UsbBroadcastReceiver(new UsbDriveListener() {
-        @SuppressLint("NotifyDataSetChanged")
-        @Override
-        public void onUsbDriveStateChanged(boolean isConnected) {
-            //        adb shell am broadcast -a android.intent.action.MEDIA_MOUNTED -d file:///storage/usb1
-//        adb shell am broadcast -a android.intent.action.MEDIA_UNMOUNTED -d file:///storage/usb1
-            if (isConnected) {
-                // 插入U盘
-                showTopIcon(TopSettingsIcons.FLASH_DRIVE_ICON);
-                ToolUtils.openFileManager(MainActivity.this);
-                Toast.makeText(MainActivity.this, "U盘已插入", Toast.LENGTH_SHORT).show();
-            } else {
-                // 拔出U盘
-                removeTopIcon(TopSettingsIcons.FLASH_DRIVE_ICON);
-                Toast.makeText(MainActivity.this, "U盘已拔出", Toast.LENGTH_SHORT).show();
-            }
-        }
-
-        @SuppressLint("NotifyDataSetChanged")
-        @Override
-        public void onBluetoothStateChanged(boolean isConnected) {
-            // 蓝牙连接
-            if (isConnected) {
-                if (topSettingsAdapter.itemIndexOfFirst(TopSettingsIcons.BLUETOOTH_ICON) == -1) {
-                    List<TopSettingsIcons> items = topSettingsAdapter.getItems();
-                    items.add(0, TopSettingsIcons.BLUETOOTH_ICON);
-                    topSettingsAdapter.submitList(items);
-                    topSettingsAdapter.notifyDataSetChanged();
-                }
-
-                Toast.makeText(MainActivity.this, "蓝牙已连接", Toast.LENGTH_SHORT).show();
-            } else {
-                // 蓝牙断开
-                int index = topSettingsAdapter.itemIndexOfFirst(TopSettingsIcons.BLUETOOTH_ICON);
-                if (index != -1) {
-                    List<TopSettingsIcons> items = topSettingsAdapter.getItems();
-                    items.remove(index);
-                    topSettingsAdapter.submitList(items);
-                    topSettingsAdapter.notifyDataSetChanged();
-                    Toast.makeText(MainActivity.this, "蓝牙已断开", Toast.LENGTH_SHORT).show();
-                }
-            }
-        }
-
-        @SuppressLint("NotifyDataSetChanged")
-        @Override
-        public void onInstalled(Context context, String pkg) {
-            AppInfo appInfo = AppsUtils.getAppInfo(context, pkg);
-            if (appInfo == null) return;
-
-            List<AppInfo> allApps = appListAdapter.getItems();
-            allApps.add(0, appInfo);
-            appListAdapter.submitList(allApps);
-            appListAdapter.notifyDataSetChanged();
-
-            syncFavoriteOnAddOrUpdate(appInfo);
-        }
-
-        @SuppressLint("NotifyDataSetChanged")
-        @Override
-        public void onUninstalled(Context context, String pkg) {
-            List<AppInfo> allApps = appListAdapter.getItems();
-            AppInfo appInfo = findByPackage(allApps, pkg);
-            if (appInfo != null) {
-                allApps.remove(appInfo);
-                appListAdapter.submitList(allApps);
-                appListAdapter.notifyDataSetChanged();
-            }
-
-            List<AppInfo> favoriteApps = favoriteAppsAdapter.getItems();
-            AppInfo fav = findByPackage(favoriteApps, pkg);
-            if (fav != null) {
-                favoriteApps.remove(fav);
-                favoriteAppsAdapter.submitList(favoriteApps);
-                favoriteAppsAdapter.notifyDataSetChanged();
-                new Thread(() -> {
-                    favoriteAppInfoDao.deleteByPackageName(pkg);
-                    allAppsInfoDao.deleteByPackageName(pkg);
-                }).start();
-            }
-        }
-
-
-        @SuppressLint("NotifyDataSetChanged")
-        @Override
-        public void onUpdated(Context context, String pkg) {
-            AppInfo appInfo = AppsUtils.getAppInfo(context, pkg);
-            if (appInfo == null) return;
-
-            List<AppInfo> allApps = appListAdapter.getItems();
-            AppInfo old = findByPackage(allApps, pkg);
-            if (old != null) {
-                allApps.remove(old);
-                allApps.add(0, appInfo);
-                appListAdapter.submitList(allApps);
-                appListAdapter.notifyDataSetChanged();
-            }
-
-            syncFavoriteOnAddOrUpdate(appInfo);
-        }
-
-        @Nullable
-        private AppInfo findByPackage(List<AppInfo> list, String pkg) {
-            if (list == null || list.isEmpty()) return null;
-            for (AppInfo app : list) {
-                if (app != null && pkg.equals(app.getPackageName())) {
-                    return app;
-                }
-            }
-            return null;
-        }
-
-        @SuppressLint("NotifyDataSetChanged")
-        private void syncFavoriteOnAddOrUpdate(AppInfo newApp) {
-            List<AppInfo> favoriteApps = favoriteAppsAdapter.getItems();
-            if (favoriteApps.isEmpty()) return;
-
-            AppInfo old = findByPackage(favoriteApps, newApp.getPackageName());
-            if (old == null) return;
-
-            int index = old.getSortIndex();
-            favoriteApps.remove(old);
-
-            newApp.setSortIndex(index);
-            favoriteApps.add(index, newApp);
-
-            favoriteAppsAdapter.submitList(favoriteApps);
-            favoriteAppsAdapter.notifyDataSetChanged();
-
-            new Thread(() -> allAppsInfoDao.update(newApp)).start();
-        }
-    });
+    AppIconAdapter dialogAppIconAdapter;
     private List<AppInfo> hiddenApps = new ArrayList<>();
     ImageView wallPager;
     ViewPager2 viewPagerCards;
@@ -465,87 +333,97 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
     }
 
     FrameLayout viewPagerContainer;
+    private final UsbBroadcastReceiver usbReceiver = new UsbBroadcastReceiver(new UsbDriveListener() {
+        @SuppressLint("NotifyDataSetChanged")
+        @Override
+        public void onUsbDriveStateChanged(boolean isConnected) {
+            //        adb shell am broadcast -a android.intent.action.MEDIA_MOUNTED -d file:///storage/usb1
+//        adb shell am broadcast -a android.intent.action.MEDIA_UNMOUNTED -d file:///storage/usb1
+            if (isConnected) {
+                // 插入U盘
+                showTopIcon(TopSettingsIcons.FLASH_DRIVE_ICON);
+                ToolUtils.openFileManager(MainActivity.this);
+                Toast.makeText(MainActivity.this, "U盘已插入", Toast.LENGTH_SHORT).show();
+            } else {
+                // 拔出U盘
+                removeTopIcon(TopSettingsIcons.FLASH_DRIVE_ICON);
+                Toast.makeText(MainActivity.this, "U盘已拔出", Toast.LENGTH_SHORT).show();
+            }
+        }
 
-    private void initView() {
-        wallPager = findViewById(R.id.wall_pager);
-        // 功能区域
-        viewPagerCards = findViewById(R.id.view_pager_cards);
-        LinearLayout dotContainer = findViewById(R.id.dot_container);
-        viewPagerContainer = findViewById(R.id.view_pager_container);
-        List<Fragment> fragments = getFragments();
-        DotContainerUtils.bindViewPager(viewPagerCards, dotContainer, fragments.size());
-        InfoCardPagerAdapter infoCardPagerAdapter = new InfoCardPagerAdapter(this, fragments);
-        viewPagerCards.setAdapter(infoCardPagerAdapter);
-        viewPagerContainer.setOnFocusChangeListener((v, hasFocus) -> {
-            float scale = hasFocus ? 1.05f : 1.0f;
-            v.animate().scaleX(scale).scaleY(scale).setDuration(150).start();
-            v.setElevation(hasFocus ? 20f : 0f);
-        });
-        // ❗TV 必须关掉用户滑动（用遥控器控制）
-//        viewPagerCards.setUserInputEnabled(false);
+        @SuppressLint("NotifyDataSetChanged")
+        @Override
+        public void onBluetoothStateChanged(boolean isConnected) {
+            // 蓝牙连接
+            if (isConnected) {
+                topSettingsAdapter.add(0, TopSettingsIcons.BLUETOOTH_ICON);
+                topSettingsAdapter.notifyDataSetChanged();
+                Toast.makeText(MainActivity.this, "蓝牙已连接", Toast.LENGTH_SHORT).show();
+            } else {
+                // 蓝牙断开
+                topSettingsAdapter.remove(TopSettingsIcons.BLUETOOTH_ICON);
+                topSettingsAdapter.notifyDataSetChanged();
+                Toast.makeText(MainActivity.this, "蓝牙已断开", Toast.LENGTH_SHORT).show();
+            }
+        }
 
-        // 预加载（避免切换卡顿）
-        viewPagerCards.setOffscreenPageLimit(fragments.size());
+        @SuppressLint("NotifyDataSetChanged")
+        @Override
+        public void onInstalled(Context context, String pkg) {
+            AppInfo appInfo = AppsUtils.getAppInfo(context, pkg);
+            if (appInfo == null) return;
+            appListAdapter.add(0, appInfo);
+            appListAdapter.notifyDataSetChanged();
+            new Thread(() -> allAppsInfoDao.insert(appInfo)).start();
+        }
 
-        viewPagerContainer.setOnKeyListener((v, keyCode, event) -> {
-            if (event.getAction() != KeyEvent.ACTION_DOWN) {
-                return false;
+        @SuppressLint("NotifyDataSetChanged")
+        @Override
+        public void onUninstalled(Context context, String pkg) {
+            List<AppInfo> allApps = appListAdapter.getItems();
+            AppInfo appInfo = findByPackage(allApps, pkg);
+            if (appInfo != null) {
+                appListAdapter.remove(appInfo);
+                appListAdapter.notifyDataSetChanged();
+                new Thread(() -> allAppsInfoDao.deleteByPackageName(pkg)).start();
             }
 
-            int current = viewPagerCards.getCurrentItem();
-
-            if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-                if (current < infoCardPagerAdapter.getItemCount() - 1) {
-                    viewPagerCards.setCurrentItem(current + 1, true);
-                }
-                return true; // ✅ 消费事件
-            } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
-                if (current > 0) {
-                    viewPagerCards.setCurrentItem(current - 1, true);
-                    return true; // ✅ 消费事件
-                }
-            } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
-                topSettingsBar.requestFocus();
-                return true; // ✅ 消费事件
-            } else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-                favoriteAppsGrid.requestFocus();
-                return true; // ✅ 消费事件
-            } else if (keyCode == KeyEvent.KEYCODE_MENU) {
-                int currentItem = viewPagerCards.getCurrentItem();
-                Log.d(TAG, "当前展示的界面是：" + currentItem);
-                return true; // ✅ 消费事件
+            List<AppInfo> favoriteApps = favoriteAppsAdapter.getItems();
+            AppInfo fav = findByPackage(favoriteApps, pkg);
+            if (fav != null) {
+                favoriteAppsAdapter.remove(fav);
+                favoriteAppsAdapter.notifyDataSetChanged();
+                new Thread(() -> favoriteAppInfoDao.deleteByPackageName(pkg)).start();
             }
-            return false; // ❗ 其他情况放行
-        });
+            if (dialogAppIconAdapter != null) {
+                List<AppInfo> items = dialogAppIconAdapter.getItems();
+                AppInfo hide = findByPackage(items, pkg);
+                if (hide != null) {
+                    dialogAppIconAdapter.remove(hide);
+                    dialogAppIconAdapter.notifyDataSetChanged();
+                    new Thread(() -> allAppsInfoDao.deleteByPackageName(pkg)).start();
+                }
+            }
+        }
 
-        viewPagerCards.setPageTransformer((page, position) -> {
-            float scale = 0.9f + (1 - Math.abs(position)) * 0.1f;
-            page.setScaleX(scale);
-            page.setScaleY(scale);
-        });
 
+        @SuppressLint("NotifyDataSetChanged")
+        @Override
+        public void onUpdated(Context context, String pkg) {
 
-        // 顶部设置按钮
-        topSettingsBar = findViewById(R.id.top_settings_lists);
-        // 常用的软件
-        favoriteAppsContainer = findViewById(R.id.favorite_apps_container);
-        favoriteAppsGrid = findViewById(R.id.favorite_apps_grid);
-        // 所有软件的布局和列表
-        allAppsContainer = findViewById(R.id.all_apps_container);
-        appListGrid = findViewById(R.id.all_apps_grid);
+        }
 
-        topSettingsBar.setLayoutManager(new V7LinearLayoutManager(this, V7LinearLayoutManager.HORIZONTAL, false));
-        favoriteAppsGrid.setLayoutManager(new V7LinearLayoutManager(this, V7LinearLayoutManager.HORIZONTAL, false));
-        appListGrid.setLayoutManager(new V7GridLayoutManager(this, 5));
-        topSettingsBar.setOnInBorderKeyEventListener(new ViewAnimationShake(topSettingsBar, this, 0, this));
-        favoriteAppsGrid.setOnInBorderKeyEventListener(new ViewAnimationShake(favoriteAppsGrid, this, 1, this));
-        appListGrid.setOnInBorderKeyEventListener(new ViewAnimationShake(appListGrid, this, 2, this));
-        allAppsContainer.post(() -> {
-            int screenHeight = ScreenUtils.getScreenHeight();
-            allAppsContainer.setTranslationY(screenHeight);
-            allAppsContainer.setVisibility(View.VISIBLE);
-        });
-    }
+        @Nullable
+        private AppInfo findByPackage(List<AppInfo> list, String pkg) {
+            if (list == null || list.isEmpty()) return null;
+            for (AppInfo app : list) {
+                if (app != null && pkg.equals(app.getPackageName())) {
+                    return app;
+                }
+            }
+            return null;
+        }
+    });
 
     private void initListener() {
         topSettingsAdapter.setOnItemClickListener((baseQuickAdapter, view, i) -> {
@@ -689,16 +567,129 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         }
     }
 
+    private void initView() {
+        wallPager = findViewById(R.id.wall_pager);
+        // 功能区域
+        viewPagerCards = findViewById(R.id.view_pager_cards);
+        LinearLayout dotContainer = findViewById(R.id.dot_container);
+        viewPagerContainer = findViewById(R.id.view_pager_container);
+        List<Fragment> fragments = getFragments();
+        DotContainerUtils.bindViewPager(viewPagerCards, dotContainer, fragments.size());
+        InfoCardPagerAdapter infoCardPagerAdapter = new InfoCardPagerAdapter(this, fragments);
+        viewPagerCards.setAdapter(infoCardPagerAdapter);
+        viewPagerContainer.setOnFocusChangeListener((v, hasFocus) -> {
+            float scale = hasFocus ? 1.05f : 1.0f;
+            v.animate().scaleX(scale).scaleY(scale).setDuration(150).start();
+            v.setElevation(hasFocus ? 20f : 0f);
+        });
+        // ❗TV 必须关掉用户滑动（用遥控器控制）
+//        viewPagerCards.setUserInputEnabled(false);
+
+        // 预加载（避免切换卡顿）
+        viewPagerCards.setOffscreenPageLimit(fragments.size());
+
+        viewPagerContainer.setOnKeyListener((v, keyCode, event) -> {
+            if (event.getAction() != KeyEvent.ACTION_DOWN) {
+                return false;
+            }
+
+            int current = viewPagerCards.getCurrentItem();
+
+            if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                if (current < infoCardPagerAdapter.getItemCount() - 1) {
+                    viewPagerCards.setCurrentItem(current + 1, true);
+                }
+                return true; // ✅ 消费事件
+            } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                if (current > 0) {
+                    viewPagerCards.setCurrentItem(current - 1, true);
+                    return true; // ✅ 消费事件
+                }
+            } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+                topSettingsBar.requestFocus();
+                return true; // ✅ 消费事件
+            } else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+                favoriteAppsGrid.requestFocus();
+                return true; // ✅ 消费事件
+            } else if (keyCode == KeyEvent.KEYCODE_MENU) {
+                int currentItem = viewPagerCards.getCurrentItem();
+                Log.d(TAG, "当前展示的界面是：" + currentItem);
+                return true; // ✅ 消费事件
+            }
+            return false; // ❗ 其他情况放行
+        });
+
+        viewPagerCards.setPageTransformer((page, position) -> {
+            float scale = 0.9f + (1 - Math.abs(position)) * 0.1f;
+            page.setScaleX(scale);
+            page.setScaleY(scale);
+        });
+
+
+        // 顶部设置按钮
+        topSettingsBar = findViewById(R.id.top_settings_lists);
+        // 常用的软件
+        favoriteAppsContainer = findViewById(R.id.favorite_apps_container);
+        favoriteAppsGrid = findViewById(R.id.favorite_apps_grid);
+        // 所有软件的布局和列表
+        allAppsContainer = findViewById(R.id.all_apps_container);
+        appListGrid = findViewById(R.id.all_apps_grid);
+
+        topSettingsBar.setLayoutManager(new V7LinearLayoutManager(this, V7LinearLayoutManager.HORIZONTAL, false));
+        favoriteAppsGrid.setLayoutManager(new V7LinearLayoutManager(this, V7LinearLayoutManager.HORIZONTAL, false));
+        appListGrid.setLayoutManager(new V7GridLayoutManager(this, 5));
+        topSettingsBar.setOnInBorderKeyEventListener(new ViewAnimationShake(topSettingsBar, this) {
+            @Override
+            public boolean onInBorderKeyEvent(int direction, View focused) {
+                if (direction == View.FOCUS_DOWN) {
+                    viewPagerContainer.requestFocus();
+                    return true;
+                }
+                return super.onInBorderKeyEvent(direction, focused);
+            }
+        });
+        favoriteAppsGrid.setOnInBorderKeyEventListener(new ViewAnimationShake(favoriteAppsGrid, this) {
+            @Override
+            public boolean onInBorderKeyEvent(int direction, View focused) {
+                if (direction == View.FOCUS_DOWN) {
+                    showAllApps();
+                    return true;
+                } else if (direction == View.FOCUS_UP) {
+                    viewPagerContainer.requestFocus();
+                    return true;
+                }
+                return super.onInBorderKeyEvent(direction, focused);
+            }
+        });
+        appListGrid.setOnInBorderKeyEventListener(new ViewAnimationShake(appListGrid, this) {
+            @Override
+            public boolean onInBorderKeyEvent(int direction, View focused) {
+                if (direction == View.FOCUS_UP) {
+                    showHomeApps();
+                    return true;
+                } else if (direction == View.FOCUS_DOWN) {
+                    return true;
+                }
+                return super.onInBorderKeyEvent(direction, focused);
+            }
+        });
+        allAppsContainer.post(() -> {
+            int screenHeight = ScreenUtils.getScreenHeight();
+            allAppsContainer.setTranslationY(screenHeight);
+            allAppsContainer.setVisibility(View.VISIBLE);
+        });
+    }
+
     private void showPrivacyContent() {
         if (hiddenApps.isEmpty()) {
-            Toast.makeText(this, "暂无隐私空间", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "隐私空间无应用", Toast.LENGTH_SHORT).show();
             return;
         }
         View inflate = LayoutInflater.from(this).inflate(R.layout.activity_dialog_all_app, null);
         showMaterialAlertDialog(this, "隐私空间", inflate);
         TvRecyclerView allDialogGrid = inflate.findViewById(R.id.all_dialog_grid);
         allDialogGrid.setLayoutManager(new V7GridLayoutManager(this, 5));
-        AppIconAdapter dialogAppIconAdapter = new AppIconAdapter();
+        dialogAppIconAdapter = new AppIconAdapter();
         allDialogGrid.setAdapter(dialogAppIconAdapter);
         dialogAppIconAdapter.submitList(hiddenApps);
         dialogAppIconAdapter.setOnItemLongClickListener((baseQuickAdapter, view2, i) -> {
@@ -1154,24 +1145,5 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
         if (!defaultHome) {
             new MaterialAlertDialogBuilder(this, R.style.CustomDialogTheme).setTitle("设置为默认桌面").setMessage("是否要设置为默认桌面？").setPositiveButton("是", (dialog, which) -> ToolUtils.goToHomeSettings(this)).setNegativeButton("否", null).show();
         }
-    }
-
-    @Override
-    public boolean animateType(int viewAction, int gridType) {
-        if (viewAction == View.FOCUS_DOWN && gridType == 1) {
-            showAllApps();
-            return true;
-        } else if (viewAction == View.FOCUS_UP && gridType == 2) {
-            showHomeApps();
-            return true;
-        } else if (viewAction == View.FOCUS_DOWN && gridType == 0) {
-            viewPagerContainer.requestFocus();
-            return true;
-        } else if (viewAction == View.FOCUS_UP && gridType == 1) {
-            viewPagerContainer.requestFocus();
-            return true;
-        }
-        Log.d(TAG, "animateType: 下放控件");
-        return false;
     }
 }

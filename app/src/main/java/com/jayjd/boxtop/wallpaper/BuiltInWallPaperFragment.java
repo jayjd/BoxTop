@@ -2,6 +2,8 @@ package com.jayjd.boxtop.wallpaper;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,7 +32,7 @@ import com.lzy.okgo.model.Progress;
 import com.lzy.okgo.model.Response;
 import com.lzy.okgo.request.base.Request;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
-import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
+import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
 
 import java.io.File;
 import java.util.List;
@@ -52,6 +54,9 @@ public class BuiltInWallPaperFragment extends BaseCardFragment {
         initView(inflate);
         return inflate;
     }
+
+    private final Handler debounceHandler = new Handler(Looper.getMainLooper());
+    private Runnable debounceRunnable;
 
     private void initData() {
         OkGo.<String>get(ApiConfig.WALLPAPER_URL).execute(new StringCallback() {
@@ -82,24 +87,37 @@ public class BuiltInWallPaperFragment extends BaseCardFragment {
                 Toast.makeText(appContext, "加载壁纸列表失败", Toast.LENGTH_SHORT).show();
             }
         });
+        ToolUtils.initWallPager(appContext, wallPagerDefault);
     }
 
     private void initView(View inflate) {
         wallPagerPreview = inflate.findViewById(R.id.wall_pager_preview);
         wallPagerDefault = inflate.findViewById(R.id.wall_pager_default);
         downloadProgress = inflate.findViewById(R.id.download_progress);
-        ToolUtils.initWallPager(appContext, wallPagerDefault);
         trWallList = inflate.findViewById(R.id.tr_wall_list);
-        trWallList.setLayoutManager(new V7GridLayoutManager(appContext, 4));
+        trWallList.setLayoutManager(new V7LinearLayoutManager(appContext, V7LinearLayoutManager.HORIZONTAL, false));
         wallPagerAdapter = new WallPagerAdapter();
         trWallList.setAdapter(wallPagerAdapter);
         trWallList.setOnItemListener(new TvOnItemListener() {
             @Override
             public void onItemSelected(TvRecyclerView parent, View itemView, int position) {
                 super.onItemSelected(parent, itemView, position);
-                downloadProgress.setVisibility(View.GONE);
-                ImageView imageView = itemView.findViewById(R.id.iv_wall_pager);
-                wallPagerPreview.setImageDrawable(imageView.getDrawable());
+                // 2. 移除之前的回调
+                if (debounceRunnable != null) {
+                    debounceHandler.removeCallbacks(debounceRunnable);
+                }
+
+                // 3. 创建新的任务
+                debounceRunnable = () -> {
+                    downloadProgress.setVisibility(View.GONE);
+                    ImageView imageView = itemView.findViewById(R.id.iv_wall_pager);
+                    if (imageView != null && imageView.getDrawable() != null) {
+                        wallPagerPreview.setImageDrawable(imageView.getDrawable());
+                    }
+                };
+
+                // 4. 延迟执行（200-300ms 是 TV 端比较舒适的反馈时间）
+                debounceHandler.postDelayed(debounceRunnable, 250);
             }
         });
         trWallList.setOnInBorderKeyEventListener(new ViewAnimationShake(trWallList, appContext) {
@@ -144,7 +162,6 @@ public class BuiltInWallPaperFragment extends BaseCardFragment {
                         SPUtils.put(appContext, "default_wallpaper", downloadedFile.getAbsolutePath());
                         Toast.makeText(appContext, "壁纸下载成功", Toast.LENGTH_SHORT).show();
                         ToolUtils.initWallPager(appContext, wallPagerDefault);
-
                     }
                 }
             }
@@ -159,7 +176,7 @@ public class BuiltInWallPaperFragment extends BaseCardFragment {
             @SuppressLint("DefaultLocale")
             @Override
             public void downloadProgress(Progress progress) {
-                Log.d(TAG, "downloadProgress: " + progress);
+                Log.d(TAG, "downloadProgress: " + progress.fraction);
                 downloadProgress.setText(String.format("%.2f%%", progress.fraction * 100));
             }
         });
