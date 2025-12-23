@@ -79,8 +79,7 @@ public class AppUsageRankAdapter extends BaseQuickAdapter<AppInfo, QuickViewHold
         quickViewHolder.setText(R.id.tv_count, displayText);
 
         View bar = quickViewHolder.getView(R.id.view_bar);
-
-        int maxWidth = dp(quickViewHolder.itemView, 100);
+        int maxWidth = dp(quickViewHolder.itemView, 160);
         int width = (int) (maxWidth * (appInfo.getOpenAppCount() * 1f / maxCount));
 
         ViewGroup.LayoutParams lp = bar.getLayoutParams();
