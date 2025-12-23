@@ -19,12 +19,15 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.BounceInterpolator;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.blankj.utilcode.util.ConvertUtils;
 import com.blankj.utilcode.util.EncodeUtils;
 import com.blankj.utilcode.util.SizeUtils;
+import com.bumptech.glide.Glide;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.jayjd.boxtop.R;
 import com.jayjd.boxtop.entity.AppInfo;
 
 import java.io.File;
@@ -55,8 +58,6 @@ public class ToolUtils {
     public static String getPrivacyPwd(Context context) {
         return (String) SPUtils.get(context, "privacy_pwd", "");
     }
-
-
 
     public static void startAnimation(View view) {
         if (App.isPaid(view.getContext())) {
@@ -457,4 +458,17 @@ public class ToolUtils {
         return Color.HSVToColor(255, hsv);
     }
 
+    public static void initWallPager(Context context, ImageView wallPagerPreview) {
+        String defaultWallPaper = (String) SPUtils.get(context, "default_wallpaper", "");
+        if (!defaultWallPaper.isEmpty()) {
+            File file = new File(defaultWallPaper);
+            if (file.exists()) {
+                Glide.with(context).load(file).centerCrop().into(wallPagerPreview);
+            } else {
+                Glide.with(context).load(R.drawable.wallpager).centerCrop().into(wallPagerPreview);
+            }
+        } else {
+            Glide.with(context).load(R.drawable.wallpager).centerCrop().into(wallPagerPreview);
+        }
+    }
 }

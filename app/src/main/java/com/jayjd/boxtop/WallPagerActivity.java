@@ -3,6 +3,9 @@ package com.jayjd.boxtop;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -11,6 +14,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.jayjd.boxtop.adapter.WallPagerAdapter;
@@ -20,10 +24,12 @@ import com.jayjd.boxtop.listeners.TvOnItemListener;
 import com.jayjd.boxtop.listeners.ViewAnimationShake;
 import com.jayjd.boxtop.utils.ApiConfig;
 import com.jayjd.boxtop.utils.SPUtils;
+import com.jayjd.boxtop.utils.ToolUtils;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Progress;
 import com.lzy.okgo.model.Response;
+import com.lzy.okgo.request.base.Request;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
 
@@ -51,6 +57,9 @@ public class WallPagerActivity extends AppCompatActivity {
 
     private static final String TAG = "WallPagerActivity";
 
+    ImageView wallPagerPreview, wallPagerDefault;
+    TextView downloadProgress;
+
     private void initData() {
         OkGo.<String>get(ApiConfig.WALLPAPER_URL).execute(new StringCallback() {
             @SuppressLint("NotifyDataSetChanged")
@@ -65,6 +74,8 @@ public class WallPagerActivity extends AppCompatActivity {
                             wallPagerAdapter.setItems(list);
                             wallPagerAdapter.notifyDataSetChanged();
                             trWallList.requestFocus();
+                            String img = list.get(0).getImg();
+                            Glide.with(WallPagerActivity.this).load(img).into(wallPagerPreview);
                             return;
                         }
                     } catch (JsonSyntaxException ignored) {
@@ -82,18 +93,30 @@ public class WallPagerActivity extends AppCompatActivity {
     }
 
     private void initView() {
+        wallPagerPreview = findViewById(R.id.wall_pager_preview);
+        wallPagerDefault = findViewById(R.id.wall_pager_default);
+        downloadProgress = findViewById(R.id.download_progress);
+        ToolUtils.initWallPager(this, wallPagerDefault);
         trWallList = findViewById(R.id.tr_wall_list);
         trWallList.setLayoutManager(new V7GridLayoutManager(this, 4));
         wallPagerAdapter = new WallPagerAdapter();
         trWallList.setAdapter(wallPagerAdapter);
-        trWallList.setOnItemListener(new TvOnItemListener());
+        trWallList.setOnItemListener(new TvOnItemListener() {
+            @Override
+            public void onItemSelected(TvRecyclerView parent, View itemView, int position) {
+                super.onItemSelected(parent, itemView, position);
+                downloadProgress.setVisibility(View.GONE);
+                ImageView imageView = itemView.findViewById(R.id.iv_wall_pager);
+                wallPagerPreview.setImageDrawable(imageView.getDrawable());
+            }
+        });
         trWallList.setOnInBorderKeyEventListener(new ViewAnimationShake(trWallList, this, 0, null));
 
         wallPagerAdapter.setOnItemClickListener((baseQuickAdapter, view, i) -> {
             WallPagerEntity.DataBean.ListBean item = baseQuickAdapter.getItem(i);
             String img = item.getImg();
             if (img != null && !img.isEmpty()) {
-                downloadWallPager(img);
+                downloadWallPager(img.replace(".jpg", ".png"));
             }
         });
     }
@@ -107,13 +130,22 @@ public class WallPagerActivity extends AppCompatActivity {
         String fileName = img.substring(img.lastIndexOf("/") + 1);
         OkGo.<File>get(img).execute(new FileCallBack(wallDirFile, fileName) {
             @Override
+            public void onStart(Request<File, ? extends Request> request) {
+                super.onStart(request);
+                downloadProgress.setVisibility(View.VISIBLE);
+            }
+
+            @Override
             public void onSuccess(Response<File> response) {
                 if (response.isSuccessful()) {
                     File downloadedFile = response.body();
                     if (downloadedFile != null && downloadedFile.exists()) {
+                        downloadProgress.setText("下载完成");
                         Log.d(TAG, "onSuccess: " + downloadedFile.getAbsolutePath());
                         SPUtils.put(WallPagerActivity.this, "default_wallpaper", downloadedFile.getAbsolutePath());
                         Toast.makeText(WallPagerActivity.this, "壁纸下载成功", Toast.LENGTH_SHORT).show();
+                        ToolUtils.initWallPager(WallPagerActivity.this, wallPagerDefault);
+
                     }
                 }
             }
@@ -121,12 +153,14 @@ public class WallPagerActivity extends AppCompatActivity {
             @Override
             public void onError(Response<File> response) {
                 super.onError(response);
+                downloadProgress.setText("壁纸下载失败");
                 Toast.makeText(WallPagerActivity.this, "壁纸下载失败", Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void downloadProgress(Progress progress) {
                 Log.d(TAG, "downloadProgress: " + progress);
+                downloadProgress.setText(String.format("%.2f%%", progress.fraction * 100));
             }
         });
     }

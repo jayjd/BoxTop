@@ -7,8 +7,8 @@ public enum PreviewSettings {
     START("启动软件"),
     VIEW("查看信息"),
     MOVE("移动软件"),
-    HIDE("隐藏软件"),
-    SHOW("显示软件"),
+    HIDE("加入隐私"),
+    SHOW("移除隐私"),
     DELETE("删除常用"),
     UNINSTALL("卸载软件");
     private final String displayName;

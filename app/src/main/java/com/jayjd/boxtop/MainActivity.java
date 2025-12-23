@@ -80,14 +80,12 @@ import com.jayjd.boxtop.utils.BlurCompat;
 import com.jayjd.boxtop.utils.DotContainerUtils;
 import com.jayjd.boxtop.utils.NetworkMonitor;
 import com.jayjd.boxtop.utils.PrivacyPasswordManager;
-import com.jayjd.boxtop.utils.SPUtils;
 import com.jayjd.boxtop.utils.ToolUtils;
 import com.jayjd.boxtop.utils.cpu.CpuMonitor;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
 import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -253,25 +251,11 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
     ViewPager2 viewPagerCards;
     CpuMonitor cpuMonitor;
 
-    private void initWallPager() {
-        String defaultWallpaper = (String) SPUtils.get(this, "default_wallpaper", "");
-        if (!defaultWallpaper.isEmpty()) {
-            File file = new File(defaultWallpaper);
-            if (file.exists()) {
-                Glide.with(this).load(file).centerCrop().into(wallPager);
-            } else {
-                Glide.with(this).load(R.drawable.wallpager).centerCrop().into(wallPager);
-            }
-        } else {
-            Glide.with(this).load(R.drawable.wallpager).centerCrop().into(wallPager);
-        }
-    }
-
 
     @Override
     protected void onResume() {
         super.onResume();
-        initWallPager();
+        ToolUtils.initWallPager(this, wallPager);
     }
 
     @Override
