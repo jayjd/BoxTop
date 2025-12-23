@@ -1,4 +1,4 @@
-package com.jayjd.boxtop;
+package com.jayjd.boxtop.wallpaper;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
@@ -17,6 +17,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import com.jayjd.boxtop.R;
 import com.jayjd.boxtop.adapter.WallPagerAdapter;
 import com.jayjd.boxtop.entity.WallPagerEntity;
 import com.jayjd.boxtop.listeners.FileCallBack;

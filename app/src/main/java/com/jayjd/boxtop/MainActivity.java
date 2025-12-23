@@ -82,6 +82,7 @@ import com.jayjd.boxtop.utils.NetworkMonitor;
 import com.jayjd.boxtop.utils.PrivacyPasswordManager;
 import com.jayjd.boxtop.utils.ToolUtils;
 import com.jayjd.boxtop.utils.cpu.CpuMonitor;
+import com.jayjd.boxtop.wallpaper.WallPagerActivity;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
 import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
