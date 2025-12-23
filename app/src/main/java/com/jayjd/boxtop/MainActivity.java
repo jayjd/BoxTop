@@ -521,6 +521,10 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             } else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
                 favoriteAppsGrid.requestFocus();
                 return true; // ✅ 消费事件
+            } else if (keyCode == KeyEvent.KEYCODE_MENU) {
+                int currentItem = viewPagerCards.getCurrentItem();
+                Log.d(TAG, "当前展示的界面是：" + currentItem);
+                return true; // ✅ 消费事件
             }
             return false; // ❗ 其他情况放行
         });
@@ -780,8 +784,7 @@ public class MainActivity extends AppCompatActivity implements ViewAnimateListen
             switch (settings) {
                 case START:
                     AppUtils.launchApp(appInfo.getPackageName());
-                    if (appInfo.getIsSystem() == 0)
-                        sortData(appInfo);
+                    if (appInfo.getIsSystem() == 0) sortData(appInfo);
                     break;
                 case VIEW:
                     AppUtils.launchAppDetailsSettings(appInfo.getPackageName());

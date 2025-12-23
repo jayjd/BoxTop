@@ -37,7 +37,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_title"
-            app:tv_verticalSpacingWithMargins="8dp"
             tools:listitem="@layout/item_app_rank" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

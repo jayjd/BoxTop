@@ -11,7 +11,7 @@
         android:layout_height="match_parent"
         android:background="@drawable/card_bg_weather"
         android:clipToOutline="true"
-        android:padding="16dp"
+        android:padding="8dp"
         tools:targetApi="31">
 
         <!-- 天气图标 -->
@@ -81,6 +81,18 @@
         </LinearLayout>
 
         <TextView
+            android:id="@+id/about_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="* 最后更新"
+            android:textColor="#CCFFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@id/sjly"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/sjly"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="* 数据来源：WEATHERAPI"

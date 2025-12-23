@@ -45,7 +45,7 @@ public class CardSystem extends BaseCardFragment {
         super.onFragmentVisible();
         Log.d("CardSystem", "onFragmentVisible() called");
         new Thread(() -> {
-            List<AppInfo> appInfoByOpenAppCountDesc = allAppsInfoDao.getAppInfoByOpenAppCountDesc();
+            List<AppInfo> appInfoByOpenAppCountDesc = allAppsInfoDao.getAppInfoByOpenAppCountDesc(3);
             requireActivity().runOnUiThread(() -> {
                 recyclerView.post(() -> {
                     adapter.submitList(appInfoByOpenAppCountDesc);
