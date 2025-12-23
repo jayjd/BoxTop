@@ -9,6 +9,8 @@ import android.widget.Toast;
 
 import com.jayjd.boxtop.R;
 import com.jayjd.boxtop.cards.BaseCardFragment;
+import com.jayjd.boxtop.listeners.TvOnItemListener;
+import com.jayjd.boxtop.listeners.ViewAnimationShake;
 import com.jayjd.boxtop.utils.SPUtils;
 import com.jayjd.boxtop.wallpaper.adapter.LocalWallAdapter;
 import com.jayjd.boxtop.wallpaper.adapter.WallPaperUtils;
@@ -32,12 +34,22 @@ public class LocalWallPaperFragment extends BaseCardFragment {
         return view;
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void initView(View view) {
         localWallList = view.findViewById(R.id.local_wall_list);
         localWallList.setLayoutManager(new V7LinearLayoutManager(appContext, V7LinearLayoutManager.HORIZONTAL, false));
         localWallAdapter = new LocalWallAdapter();
         localWallList.setAdapter(localWallAdapter);
-
+        localWallList.setOnInBorderKeyEventListener(new ViewAnimationShake(localWallList, appContext) {
+            @Override
+            public boolean onInBorderKeyEvent(int direction, View focused) {
+                if (direction == View.FOCUS_UP) {
+                    return false;
+                }
+                return super.onInBorderKeyEvent(direction, focused);
+            }
+        });
+        localWallList.setOnItemListener(new TvOnItemListener());
         localWallAdapter.setOnItemLongClickListener((baseQuickAdapter, view1, i) -> {
             File item = baseQuickAdapter.getItem(i);
             String defaultWallpaper = (String) SPUtils.get(appContext, "default_wallpaper", "");
@@ -68,11 +80,15 @@ public class LocalWallPaperFragment extends BaseCardFragment {
         List<File> localWallPaperList = WallPaperUtils.getLocalWallPaperList(appContext);
         localWallAdapter.submitList(localWallPaperList);
         localWallAdapter.notifyDataSetChanged();
-        localWallList.requestFocus();
     }
 
     @Override
     protected void onFragmentInvisible() {
         super.onFragmentInvisible();
+    }
+    @Override
+    public void requestDefaultFocus() {
+        super.requestDefaultFocus();
+        localWallList.requestFocus();
     }
 }

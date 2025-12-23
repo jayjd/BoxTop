@@ -66,7 +66,6 @@ public class BuiltInWallPaperFragment extends BaseCardFragment {
                             List<WallPagerEntity.DataBean.ListBean> list = wallPagerEntity.getData().getList();
                             wallPagerAdapter.setItems(list);
                             wallPagerAdapter.notifyDataSetChanged();
-                            trWallList.requestFocus();
                             String img = list.get(0).getImg();
                             Glide.with(appContext).load(img).into(wallPagerPreview);
                             return;
@@ -103,7 +102,15 @@ public class BuiltInWallPaperFragment extends BaseCardFragment {
                 wallPagerPreview.setImageDrawable(imageView.getDrawable());
             }
         });
-        trWallList.setOnInBorderKeyEventListener(new ViewAnimationShake(trWallList, appContext, 0, null));
+        trWallList.setOnInBorderKeyEventListener(new ViewAnimationShake(trWallList, appContext) {
+            @Override
+            public boolean onInBorderKeyEvent(int direction, View focused) {
+                if (direction == View.FOCUS_UP) {
+                    return false;
+                }
+                return super.onInBorderKeyEvent(direction, focused);
+            }
+        });
 
         wallPagerAdapter.setOnItemClickListener((baseQuickAdapter, view, i) -> {
             WallPagerEntity.DataBean.ListBean item = baseQuickAdapter.getItem(i);
@@ -167,5 +174,11 @@ public class BuiltInWallPaperFragment extends BaseCardFragment {
     @Override
     protected void onFragmentInvisible() {
         super.onFragmentInvisible();
+    }
+
+    @Override
+    public void requestDefaultFocus() {
+        super.requestDefaultFocus();
+        trWallList.requestFocus();
     }
 }
