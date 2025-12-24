@@ -92,5 +92,8 @@ public class CardDevice extends BaseCardFragment {
         Log.d("CardDevice", "onFragmentInvisible() called");
     }
 
-
+    @Override
+    protected void onProStateChanged(boolean isPro) {
+        Log.d("TAG", "onProStateChanged: " + isPro);
+    }
 }

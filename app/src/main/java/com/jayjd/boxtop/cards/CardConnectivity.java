@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.jayjd.boxtop.R;
@@ -296,6 +297,16 @@ public class CardConnectivity extends BaseCardFragment {
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
         if (adapter == null || !adapter.isEnabled()) return 0;
 
+        if (ActivityCompat.checkSelfPermission(appContext, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return 0;
+        }
         Set<BluetoothDevice> pairedDevices = adapter.getBondedDevices();
         return pairedDevices != null ? pairedDevices.size() : 0;
     }
@@ -312,5 +323,10 @@ public class CardConnectivity extends BaseCardFragment {
         super.onFragmentInvisible();
         Log.d("CardConnectivity", "onFragmentInvisible() called");
 
+    }
+
+    @Override
+    protected void onProStateChanged(boolean isPro) {
+        Log.d("TAG", "onProStateChanged: " + isPro);
     }
 }

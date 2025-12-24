@@ -4,13 +4,16 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.jayjd.boxtop.R;
-import com.jayjd.boxtop.utils.ToolUtils;
+import com.jayjd.boxtop.utils.animation.AnimationFactory;
+import com.jayjd.boxtop.utils.animation.ItemAnimation;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 
 public class TvOnItemListener implements TvRecyclerView.OnItemListener {
+
+    private final ItemAnimation animation = AnimationFactory.get();
     @Override
     public void onItemPreSelected(TvRecyclerView parent, View itemView, int position) {
-        ToolUtils.endAnimation(itemView);
+        animation.end(itemView);
     }
 
     @Override
@@ -19,7 +22,7 @@ public class TvOnItemListener implements TvRecyclerView.OnItemListener {
         if (textView != null) textView.setSelected(true);
         TextView categoryName = itemView.findViewById(R.id.category_name);
         if (categoryName != null) categoryName.setSelected(true);
-        ToolUtils.startAnimation(itemView);
+        animation.start(itemView);
     }
 
     @Override

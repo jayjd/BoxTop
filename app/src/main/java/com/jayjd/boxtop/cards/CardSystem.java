@@ -63,4 +63,9 @@ public class CardSystem extends BaseCardFragment {
         super.onFragmentInvisible();
         Log.d("CardSystem", "onFragmentInvisible() called");
     }
+
+    @Override
+    protected void onProStateChanged(boolean isPro) {
+        Log.d("TAG", "onProStateChanged: " + isPro);
+    }
 }

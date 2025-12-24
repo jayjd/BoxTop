@@ -133,4 +133,9 @@ public class CardStorage extends BaseCardFragment {
         super.onFragmentInvisible();
         Log.d("CardStorage", "onFragmentInvisible() called");
     }
+
+    @Override
+    protected void onProStateChanged(boolean isPro) {
+        Log.d("TAG", "onProStateChanged: " + isPro);
+    }
 }

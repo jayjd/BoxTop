@@ -7,6 +7,8 @@ import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import com.jayjd.boxtop.utils.PurchaseManager;
+
 public abstract class BaseCardFragment extends Fragment {
 
     private static final long DEBOUNCE_TIME = 300; // 防抖时间(ms)
@@ -14,7 +16,7 @@ public abstract class BaseCardFragment extends Fragment {
     private boolean isVisibleToUser = false;
     private boolean isDebouncing = false;
     private final Runnable debounceRunnable = () -> isDebouncing = false;
-
+    protected boolean isPro;
     protected Context appContext;
 
     @Override
@@ -34,6 +36,8 @@ public abstract class BaseCardFragment extends Fragment {
     public void onResume() {
         super.onResume();
         if (!isAdded() || getView() == null) return;
+        isPro = PurchaseManager.getInstance().isPro();
+        onProStateChanged(isPro);
         tryDispatchVisible(true);
     }
 
@@ -84,9 +88,11 @@ public abstract class BaseCardFragment extends Fragment {
      */
     protected void onFragmentInvisible() {
     }
-    public void requestDefaultFocus(){
+
+    public void requestDefaultFocus() {
 
     }
+
     protected int getProgressDrawable(int percent) {
         int color;
         if (percent < 70) color = 0xFF4CAF50;
@@ -94,4 +100,6 @@ public abstract class BaseCardFragment extends Fragment {
         else color = 0xFFF44336;
         return color;
     }
+
+    protected abstract void onProStateChanged(boolean isPro);
 }

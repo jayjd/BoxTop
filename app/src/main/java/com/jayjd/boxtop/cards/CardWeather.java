@@ -147,4 +147,8 @@ public class CardWeather extends BaseCardFragment {
         super.onFragmentInvisible();
         Log.d("CardWeather", "onFragmentInvisible() called");
     }
+    @Override
+    protected void onProStateChanged(boolean isPro) {
+        Log.d("TAG", "onProStateChanged: " + isPro);
+    }
 }

@@ -14,7 +14,7 @@ import com.chad.library.adapter4.viewholder.QuickViewHolder;
 import com.google.android.material.card.MaterialCardView;
 import com.jayjd.boxtop.R;
 import com.jayjd.boxtop.entity.AppInfo;
-import com.jayjd.boxtop.utils.App;
+import com.jayjd.boxtop.utils.PurchaseManager;
 import com.jayjd.boxtop.utils.ToolUtils;
 
 public class AppIconAdapter extends BaseQuickAdapter<AppInfo, QuickViewHolder> {
@@ -30,7 +30,8 @@ public class AppIconAdapter extends BaseQuickAdapter<AppInfo, QuickViewHolder> {
         if (appInfo != null) {
             MaterialCardView cardView = quickViewHolder.getView(R.id.card);
             cardView.setCardBackgroundColor(appInfo.getCardColor());
-            boolean tvShow = App.isShowAppName(getContext());
+            // TODO: 2025/12/24 这里后续要在设置里面 进行设置后 判断是否付费 或者在软件设置的时候就判断是否pro
+            boolean tvShow = PurchaseManager.getInstance().isPro();
             quickViewHolder.setText(R.id.tv_name, !tvShow ? appInfo.getName() : "");
             quickViewHolder.setGone(R.id.tv_name, tvShow);
             if (appInfo.getPackageName().isEmpty()) {

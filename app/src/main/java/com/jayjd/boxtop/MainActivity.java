@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -74,12 +75,13 @@ import com.jayjd.boxtop.listeners.TvOnItemListener;
 import com.jayjd.boxtop.listeners.UsbDriveListener;
 import com.jayjd.boxtop.listeners.ViewAnimationShake;
 import com.jayjd.boxtop.receiver.UsbBroadcastReceiver;
-import com.jayjd.boxtop.utils.App;
 import com.jayjd.boxtop.utils.AppsUtils;
 import com.jayjd.boxtop.utils.BlurCompat;
 import com.jayjd.boxtop.utils.DotContainerUtils;
+import com.jayjd.boxtop.utils.LicenseEvent;
 import com.jayjd.boxtop.utils.NetworkMonitor;
 import com.jayjd.boxtop.utils.PrivacyPasswordManager;
+import com.jayjd.boxtop.utils.PurchaseManager;
 import com.jayjd.boxtop.utils.ToolUtils;
 import com.jayjd.boxtop.utils.cpu.CpuMonitor;
 import com.jayjd.boxtop.wallpaper.WallpaperActivity;
@@ -150,7 +152,6 @@ public class MainActivity extends AppCompatActivity {
 //            return insets;
 //        });
 //        initDefaleHome();
-        App.setPaid(this, true);
         initView();
         initData();
         initListener();
@@ -427,6 +428,7 @@ public class MainActivity extends AppCompatActivity {
         }
     });
 
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     private void initListener() {
         topSettingsAdapter.setOnItemClickListener((baseQuickAdapter, view, i) -> {
             TopSettingsIcons item = baseQuickAdapter.getItem(i);
@@ -478,7 +480,7 @@ public class MainActivity extends AppCompatActivity {
         favoriteAppsAdapter.setOnItemClickListener((baseQuickAdapter, view, i) -> {
             if (isMoveApp) {
                 isMoveApp = false;
-                ToolUtils.endAnimation(view);
+                ToolUtils.endNormalAnimation(view);
                 return;
             }
             AppInfo item = baseQuickAdapter.getItem(i);
@@ -512,14 +514,23 @@ public class MainActivity extends AppCompatActivity {
         topSettingsBar.setOnItemListener(new TvOnItemListener());
         appListGrid.setOnItemListener(new TvOnItemListener());
         favoriteAppsGrid.setOnItemListener(new TvOnItemListener());
+
+        registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+//                refreshAll();
+            }
+        }, new IntentFilter(LicenseEvent.ACTION_PRO_UNLOCKED));
     }
 
     @SuppressLint("NotifyDataSetChanged")
     private void sortData(AppInfo appInfo) {
         appInfo.setOpenAppCount(appInfo.getOpenAppCount() + 1);
-        Collections.sort(appListAdapter.getItems(), (o1, o2) -> Long.compare(o2.getOpenAppCount(), o1.getOpenAppCount()));
+        if (PurchaseManager.getInstance().isPro()) {
+            Collections.sort(appListAdapter.getItems(), (o1, o2) -> Long.compare(o2.getOpenAppCount(), o1.getOpenAppCount()));
+            dbExecutor.execute(() -> allAppsInfoDao.updateOpenAppCountByPackageName(appInfo.getPackageName(), appInfo.getOpenAppCount()));
+        }
         appListAdapter.notifyDataSetChanged();
-        dbExecutor.execute(() -> allAppsInfoDao.updateOpenAppCountByPackageName(appInfo.getPackageName(), appInfo.getOpenAppCount()));
     }
 
     private void showWallPager() {
@@ -684,6 +695,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showPrivacyContent() {
+        if (!PurchaseManager.getInstance().isPro()) {
+//            ProDialog.show(context);
+            return;
+        }
         if (hiddenApps.isEmpty()) {
             Toast.makeText(this, "隐私空间无应用", Toast.LENGTH_SHORT).show();
             return;

@@ -202,4 +202,9 @@ public class BuiltInWallPaperFragment extends BaseCardFragment {
         super.requestDefaultFocus();
         trWallList.requestFocus();
     }
+
+    @Override
+    protected void onProStateChanged(boolean isPro) {
+        Log.d("TAG", "onProStateChanged: " + isPro);
+    }
 }

@@ -119,4 +119,8 @@ public class CardPerformance extends BaseCardFragment {
         isUpdating = false;
         handler.removeCallbacks(ramUpdateTask);
     }
+    @Override
+    protected void onProStateChanged(boolean isPro) {
+        Log.d("TAG", "onProStateChanged: " + isPro);
+    }
 }

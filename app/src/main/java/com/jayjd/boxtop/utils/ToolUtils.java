@@ -49,36 +49,26 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
 
 public class ToolUtils {
-
-    // 设置隐私空间的密码
-    public static void setPrivacyPwd(Context context, String pwd) {
-        SPUtils.put(context, "privacy_pwd", pwd);
+    public static void startWaveAnimation(View view) {
+        view.animate().scaleX(1.1f).scaleY(1.1f).setDuration(500) // 适当延长动画时间
+                .setInterpolator(new BounceInterpolator()) // 使用OvershootInterpolator
+                .start();
     }
 
-    public static String getPrivacyPwd(Context context) {
-        return (String) SPUtils.get(context, "privacy_pwd", "");
+    public static void endWaveAnimation(View view) {
+        view.animate().scaleX(1f).scaleY(1f).setDuration(500) // 适当延长动画时间
+                .setInterpolator(new BounceInterpolator()) // 使用OvershootInterpolator
+                .start();
     }
 
-    public static void startAnimation(View view) {
-        if (App.isPaid(view.getContext())) {
-            view.animate().scaleX(1.1f).scaleY(1.1f).setDuration(500) // 适当延长动画时间
-                    .setInterpolator(new BounceInterpolator()) // 使用OvershootInterpolator
-                    .start();
-        } else {
-            view.animate().scaleX(1.1f).scaleY(1.1f).setDuration(500) // 适当延长动画时间
-                    .start();
-        }
+    public static void startNormalAnimation(View view) {
+        view.animate().scaleX(1.1f).scaleY(1.1f).setDuration(500) // 适当延长动画时间
+                .start();
     }
 
-    public static void endAnimation(View view) {
-        if (App.isPaid(view.getContext())) {
-            view.animate().scaleX(1f).scaleY(1f).setDuration(500) // 适当延长动画时间
-                    .setInterpolator(new BounceInterpolator()) // 使用OvershootInterpolator
-                    .start();
-        } else {
-            view.animate().scaleX(1f).scaleY(1f).setDuration(500) // 适当延长动画时间
-                    .start();
-        }
+    public static void endNormalAnimation(View view) {
+        view.animate().scaleX(1f).scaleY(1f).setDuration(500) // 适当延长动画时间
+                .start();
     }
 
     public static byte[] desDecrypt(byte[] encryptText, String desKeyParameter) {
@@ -471,4 +461,6 @@ public class ToolUtils {
             Glide.with(context).load(R.drawable.wallpager).centerCrop().into(wallPagerPreview);
         }
     }
+
+
 }
