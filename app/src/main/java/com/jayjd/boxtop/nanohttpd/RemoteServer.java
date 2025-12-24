@@ -292,12 +292,13 @@ public class RemoteServer extends NanoHTTPD {
                         params.put("localPath", dest.getAbsolutePath());
                         for (RequestProcess requestProcess : postRequestList) {
                             if (requestProcess.isRequest(session, uri)) {
-                                return requestProcess.doResponse(session, uri, params, null);
+                                requestProcess.doResponse(session, uri, params, null);
                             }
                         }
                     }
+                    return createPlainTextResponse(Response.Status.OK, "推送壁纸成功");
                 } else {
-                    Log.d("TAG", "serve: "+postRequestList.size());
+                    Log.d("TAG", "serve: " + postRequestList.size());
                     for (RequestProcess requestProcess : postRequestList) {
                         if (requestProcess.isRequest(session, uri)) {
                             return requestProcess.doResponse(session, uri, params, null);
