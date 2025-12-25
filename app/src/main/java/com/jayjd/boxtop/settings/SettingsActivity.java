@@ -3,10 +3,12 @@ package com.jayjd.boxtop.settings;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.blankj.utilcode.util.AppUtils;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.jayjd.boxtop.R;
 import com.jayjd.boxtop.enums.AllSettings;
@@ -35,7 +37,7 @@ public class SettingsActivity extends AppCompatActivity {
         settingsAdapter.submitList(List.of(values));
         settingTrView.setOnInBorderKeyEventListener(new ViewAnimationShake(settingTrView, this));
         settingTrView.setOnItemListener(new TvOnItemListener());
-
+        settingTrView.requestFocus();
         settingsAdapter.setOnItemClickListener((baseQuickAdapter, view, i) -> {
             AllSettings allSettings = baseQuickAdapter.getItem(i);
             if (allSettings == AllSettings.SYSTEM_SETTINGS_CARDS) {
@@ -44,7 +46,9 @@ public class SettingsActivity extends AppCompatActivity {
                 startActivity(intent);
             } else if (allSettings == AllSettings.HOME_CARDS) {
                 SwitchMaterial switchMaterial = view.findViewById(R.id.sw_function);
-                switchMaterial.setChecked(!switchMaterial.isChecked());
+                boolean checked = !AllSettings.getHomeValue(this, allSettings);
+                switchMaterial.setChecked(checked);
+                AllSettings.setHomeValue(this, allSettings, checked);
             } else if (allSettings == AllSettings.VIP_FUNCTION) {
                 SwitchMaterial switchMaterial = view.findViewById(R.id.sw_function);
                 boolean pro = PurchaseManager.getInstance().isPro();
@@ -52,6 +56,18 @@ public class SettingsActivity extends AppCompatActivity {
                     ProDialog.show(this);
                 }
                 switchMaterial.setChecked(pro);
+            } else if (allSettings == AllSettings.BOOT_OPEN_APP_FUNCTION) {
+                boolean pro = PurchaseManager.getInstance().isPro();
+                if (!pro) {
+                    ProDialog.show(this);
+                    return;
+                }
+                String bootOpenAppValue = AllSettings.getBootOpenAppValue(this, allSettings);
+                if (bootOpenAppValue.isEmpty()) {
+                    Toast.makeText(this, "请设置开机启动APP", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                AppUtils.launchApp(bootOpenAppValue);
             }
         });
     }

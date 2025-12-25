@@ -11,6 +11,6 @@ public class BootReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if (intent == null || intent.getData() == null) return;
         String action = intent.getAction();
-        Log.d("TAG", "onReceive: " + action);
+        Log.d("TAG", "onReceive: 接收到了开机广播 - " + action);
     }
 }

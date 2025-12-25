@@ -10,8 +10,10 @@ import androidx.annotation.Nullable;
 
 import com.chad.library.adapter4.BaseQuickAdapter;
 import com.chad.library.adapter4.viewholder.QuickViewHolder;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.jayjd.boxtop.R;
 import com.jayjd.boxtop.enums.AllSettings;
+import com.jayjd.boxtop.utils.PurchaseManager;
 
 public class SettingsAdapter extends BaseQuickAdapter<AllSettings, QuickViewHolder> {
     @NonNull
@@ -26,8 +28,14 @@ public class SettingsAdapter extends BaseQuickAdapter<AllSettings, QuickViewHold
         quickViewHolder.setText(R.id.tv_function_name, allSettings.getFunctionName());
         Class<?> booleanClass = allSettings.getBooleanClass();
         if (booleanClass == Boolean.class) {
-            quickViewHolder.getView(R.id.sw_function).setVisibility(View.VISIBLE);
+            SwitchMaterial sw = quickViewHolder.getView(R.id.sw_function);
+            sw.setVisibility(View.VISIBLE);
             quickViewHolder.getView(R.id.intent_function).setVisibility(View.INVISIBLE);
+            if (allSettings == AllSettings.HOME_CARDS) {
+                sw.setChecked(AllSettings.getHomeValue(getContext(), allSettings));
+            } else if (allSettings == AllSettings.VIP_FUNCTION) {
+                sw.setChecked(PurchaseManager.getInstance().isPro());
+            }
         } else if (booleanClass == Intent.class) {
             quickViewHolder.getView(R.id.intent_function).setVisibility(View.VISIBLE);
             quickViewHolder.getView(R.id.sw_function).setVisibility(View.INVISIBLE);
