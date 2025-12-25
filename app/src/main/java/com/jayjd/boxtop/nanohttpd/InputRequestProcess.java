@@ -44,13 +44,13 @@ public class InputRequestProcess implements RequestProcess {
                 if ("local".equals(source)) {
                     mDataReceiver.onLocalInstallApk(params.get("localPath"));
                 } else {
-                    mDataReceiver.onDownloadApk(url);
+                    mDataReceiver.onDownloadApk(type,url);
                 }
             } else {
                 if ("local".equals(source)) {
                     mDataReceiver.onLocalWallpaper(params.get("localPath"));
                 } else {
-                    mDataReceiver.onDownloadWallpaper(url);
+                    mDataReceiver.onDownloadWallpaper(type,url);
                 }
             }
             return RemoteServer.createPlainTextResponse(NanoHTTPD.Response.Status.OK, "推送成功");

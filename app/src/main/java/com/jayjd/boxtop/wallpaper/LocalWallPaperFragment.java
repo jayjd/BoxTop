@@ -44,8 +44,7 @@ public class LocalWallPaperFragment extends BaseCardFragment {
     private boolean hasLoaded = false;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_local_wall_paper, container, false);
         initView(view);
@@ -74,18 +73,19 @@ public class LocalWallPaperFragment extends BaseCardFragment {
             }
 
             @Override
-            public void onDownloadApk(String url) {
-                downloadFile(url);
+            public void onDownloadApk(String type, String url) {
+                downloadFile(type, url);
             }
 
             @Override
-            public void onDownloadWallpaper(String url) {
-                downloadFile(url);
+            public void onDownloadWallpaper(String type, String url) {
+                downloadFile(type, url);
             }
 
-            public void downloadFile(String img) {
+            public void downloadFile(String type, String img) {
+                Log.d("TAG", "downloadFile: " + img);
                 File wallDirFile;
-                if (img.endsWith(".apk")) {
+                if (type.equals("apk")) {
                     wallDirFile = WallPaperUtils.getLocalDownloadPath(appContext);
                 } else {
                     wallDirFile = WallPaperUtils.getLocalWallPath(appContext);
@@ -96,12 +96,13 @@ public class LocalWallPaperFragment extends BaseCardFragment {
                 String fileName = img.substring(img.lastIndexOf("/") + 1);
                 OkGo.<File>get(img).execute(new FileCallBack(wallDirFile, fileName) {
 
+                    @SuppressLint("NotifyDataSetChanged")
                     @Override
                     public void onSuccess(Response<File> response) {
                         if (response.isSuccessful()) {
                             File downloadedFile = response.body();
                             if (downloadedFile != null && downloadedFile.exists()) {
-                                if (downloadedFile.getAbsolutePath().endsWith(".apk")) {
+                                if (type.equals("apk")) {
                                     Toast.makeText(appContext, "软件下载成功", Toast.LENGTH_SHORT).show();
                                 } else {
                                     Toast.makeText(appContext, "壁纸下载成功", Toast.LENGTH_SHORT).show();

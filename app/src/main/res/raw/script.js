@@ -66,7 +66,11 @@ function onPushWallPaper() {
             alert('请输入壁纸 URL');
             return;
         }
-
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+          alert('URL 必须以 http:// 或 https:// 开头');
+          return;
+        }
+        const cleanUrl = url.split('?')[0].split('#')[0];
         fetch('/api/push/wallpaper', {
             method: 'POST',
             headers: {
@@ -75,7 +79,7 @@ function onPushWallPaper() {
             body: JSON.stringify({
                 type: 'wallpaper',
                 source: 'url',
-                url: url
+                url: cleanUrl
             })
         })
         .then(res => res.text())
@@ -132,7 +136,11 @@ function onPushApp() {
             alert('请输入 APK 下载地址');
             return;
         }
-
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+          alert('URL 必须以 http:// 或 https:// 开头');
+          return;
+        }
+        const cleanUrl = url.split('?')[0].split('#')[0];
         fetch('/api/push/app', {
             method: 'POST',
             headers: {
@@ -141,7 +149,7 @@ function onPushApp() {
             body: JSON.stringify({
                 type: 'apk',
                 source: 'url',
-                url: url
+                url: cleanUrl
             })
         })
         .then(res => res.text())

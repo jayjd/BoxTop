@@ -918,8 +918,8 @@ public class MainActivity extends AppCompatActivity {
                     new Thread(() -> allAppsInfoDao.updateIsHiddenByPackageName(appInfo.getPackageName(), false)).start();
                     break;
                 case HIDE:
-                    if (appInfo.getIsSystem() == 1) {
-                        Toast.makeText(this, "系统应用无法隐藏", Toast.LENGTH_SHORT).show();
+                    if (!PurchaseManager.getInstance().isPro()) {
+                        ProDialog.show(this);
                         return;
                     }
                     favoriteAppsAdapter.remove(appInfo);
