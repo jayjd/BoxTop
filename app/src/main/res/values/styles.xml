@@ -11,8 +11,7 @@
         <item name="android:windowMinWidthMajor">90%</item>
         <item name="android:windowMinWidthMinor">90%</item>
 
-        <item name="android:windowEnterAnimation">@anim/pro_dialog_enter</item>
-        <item name="android:windowExitAnimation">@anim/pro_dialog_exit</item>
+        <item name="android:windowAnimationStyle">@style/ProDialogAnimation</item>
     </style>
 
     <style name="CustomDialogTheme" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
@@ -25,8 +24,7 @@
         <item name="android:windowMinWidthMajor">60%</item>
         <item name="android:windowMinWidthMinor">60%</item>
 
-        <item name="android:windowEnterAnimation">@anim/pro_dialog_enter</item>
-        <item name="android:windowExitAnimation">@anim/pro_dialog_exit</item>
+        <item name="android:windowAnimationStyle">@style/ProDialogAnimation</item>
     </style>
 
     <!-- Pro Dialog Theme -->
@@ -40,8 +38,7 @@
         <item name="android:windowMinWidthMajor">60%</item>
         <item name="android:windowMinWidthMinor">60%</item>
 
-        <item name="android:windowEnterAnimation">@anim/pro_dialog_enter</item>
-        <item name="android:windowExitAnimation">@anim/pro_dialog_exit</item>
+        <item name="android:windowAnimationStyle">@style/ProDialogAnimation</item>
     </style>
 
     <!-- 弹窗动画 -->

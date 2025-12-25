@@ -544,11 +544,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showPrivacySpace() {
-//        if (!PurchaseManager.getInstance().isPro()) {
-//            ProDialog.show(this);
-//            return;
-//        }
-
+        if (!PurchaseManager.getInstance().isPro()) {
+            ProDialog.show(this);
+            return;
+        }
         PrivacyPasswordManager privacyPasswordManager = new PrivacyPasswordManager(this);
         if (!privacyPasswordManager.hasPassword()) {
             // 引导用户设置密码
@@ -734,7 +733,6 @@ public class MainActivity extends AppCompatActivity {
     private void configPrivacyPwd(PrivacyPasswordManager privacyPasswordManager) {
         View inflate = LayoutInflater.from(this).inflate(R.layout.privacy_set_password, null);
         Dialog dialog = showMaterialAlertDialog(this, "隐私空间 - 设置密码", inflate);
-        dialog.setCancelable(false);
         EditText etPassword = inflate.findViewById(R.id.et_password);
         EditText etConfirm = inflate.findViewById(R.id.et_confirm_password);
         TextView tvError = inflate.findViewById(R.id.tv_error);
