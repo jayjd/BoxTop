@@ -1,27 +1,28 @@
 package com.jayjd.boxtop.utils;
 
-import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jayjd.boxtop.R;
-
-import java.util.Objects;
+import com.jayjd.boxtop.listeners.ViewFocusListener;
 
 public class ProDialog {
 
     public static void show(Context context) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.ProDialogTheme);
         View view = LayoutInflater.from(context).inflate(R.layout.dialog_pro, null);
-        builder.setView(view);
+        Dialog dialog = new Dialog(context, R.style.CustomDialogTheme);
+        dialog.setContentView(view);
+        dialog.show();
+        TextView unlockBtn = view.findViewById(R.id.pro_btn_unlock);
+        TextView unlockCloseBtn = view.findViewById(R.id.pro_btn_unlock_close);
+        unlockCloseBtn.setOnFocusChangeListener(new ViewFocusListener());
+        unlockCloseBtn.setOnClickListener(v -> dialog.dismiss());
 
-        AlertDialog dialog = builder.create();
-        dialog.setCanceledOnTouchOutside(true);
-
-        Button unlockBtn = view.findViewById(R.id.pro_btn_unlock);
+        unlockBtn.setOnFocusChangeListener(new ViewFocusListener());
         unlockBtn.setOnClickListener(v -> {
             dialog.dismiss();
             // TODO: 打开购买/解锁流程
@@ -32,14 +33,9 @@ public class ProDialog {
                 Toast.makeText(context, "解锁失败", Toast.LENGTH_SHORT).show();
             }
         });
-
         // TV 聚焦优化
         unlockBtn.requestFocus();
 
-        dialog.show();
-        // 设置宽高
-
-        Objects.requireNonNull(dialog.getWindow()).setLayout(dpToPx(context, 400), dpToPx(context, 260));
     }
 
     // dp 转 px

@@ -25,7 +25,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -74,6 +73,7 @@ import com.jayjd.boxtop.enums.TopSettingsIcons;
 import com.jayjd.boxtop.listeners.TvOnItemListener;
 import com.jayjd.boxtop.listeners.UsbDriveListener;
 import com.jayjd.boxtop.listeners.ViewAnimationShake;
+import com.jayjd.boxtop.listeners.ViewFocusListener;
 import com.jayjd.boxtop.receiver.UsbBroadcastReceiver;
 import com.jayjd.boxtop.utils.AppsUtils;
 import com.jayjd.boxtop.utils.BlurCompat;
@@ -544,10 +544,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showPrivacySpace() {
-        if (!PurchaseManager.getInstance().isPro()) {
-            ProDialog.show(this);
-            return;
-        }
+//        if (!PurchaseManager.getInstance().isPro()) {
+//            ProDialog.show(this);
+//            return;
+//        }
 
         PrivacyPasswordManager privacyPasswordManager = new PrivacyPasswordManager(this);
         if (!privacyPasswordManager.hasPassword()) {
@@ -557,7 +557,7 @@ public class MainActivity extends AppCompatActivity {
             View inflate = LayoutInflater.from(this).inflate(R.layout.privacy_verify_password, null);
             Dialog dialog = showMaterialAlertDialog(this, "隐私空间 - 输入密码", inflate);
             TextView etPassword = inflate.findViewById(R.id.et_password);
-            Button btnConfirm = inflate.findViewById(R.id.btn_confirm);
+            TextView btnConfirm = inflate.findViewById(R.id.btn_confirm);
             TextView tvError = inflate.findViewById(R.id.tv_error);
 
             etPassword.setOnKeyListener((v, keyCode, event) -> {
@@ -569,6 +569,8 @@ public class MainActivity extends AppCompatActivity {
             });
 
             etPassword.requestFocus();
+            btnConfirm.setOnFocusChangeListener(new ViewFocusListener());
+
             btnConfirm.setOnClickListener(v -> {
                 String pwd = etPassword.getText().toString();
                 if (pwd.isEmpty()) {
@@ -597,11 +599,7 @@ public class MainActivity extends AppCompatActivity {
         DotContainerUtils.bindViewPager(viewPagerCards, dotContainer, fragments.size());
         InfoCardPagerAdapter infoCardPagerAdapter = new InfoCardPagerAdapter(this, fragments);
         viewPagerCards.setAdapter(infoCardPagerAdapter);
-        viewPagerContainer.setOnFocusChangeListener((v, hasFocus) -> {
-            float scale = hasFocus ? 1.05f : 1.0f;
-            v.animate().scaleX(scale).scaleY(scale).setDuration(150).start();
-            v.setElevation(hasFocus ? 20f : 0f);
-        });
+        viewPagerContainer.setOnFocusChangeListener(new ViewFocusListener());
         // ❗TV 必须关掉用户滑动（用遥控器控制）
 //        viewPagerCards.setUserInputEnabled(false);
 
@@ -737,7 +735,7 @@ public class MainActivity extends AppCompatActivity {
         EditText etPassword = inflate.findViewById(R.id.et_password);
         EditText etConfirm = inflate.findViewById(R.id.et_confirm_password);
         TextView tvError = inflate.findViewById(R.id.tv_error);
-        Button btnConfirm = inflate.findViewById(R.id.btn_confirm);
+        TextView btnConfirm = inflate.findViewById(R.id.btn_confirm);
         etPassword.setKeyListener(DigitsKeyListener.getInstance("0123456789"));
         etConfirm.setKeyListener(DigitsKeyListener.getInstance("0123456789"));
 
@@ -763,7 +761,7 @@ public class MainActivity extends AppCompatActivity {
 
         /* ===== 默认焦点（TV 必须） ===== */
         etPassword.requestFocus();
-
+        btnConfirm.setOnFocusChangeListener(new ViewFocusListener());
         /* ===== 确认逻辑 ===== */
         btnConfirm.setOnClickListener(v -> {
             String p1 = etPassword.getText().toString().trim();
