@@ -42,6 +42,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.blankj.utilcode.util.ActivityUtils;
 import com.blankj.utilcode.util.AppUtils;
 import com.blankj.utilcode.util.NetworkUtils;
 import com.blankj.utilcode.util.PermissionUtils;
@@ -75,6 +76,7 @@ import com.jayjd.boxtop.listeners.UsbDriveListener;
 import com.jayjd.boxtop.listeners.ViewAnimationShake;
 import com.jayjd.boxtop.listeners.ViewFocusListener;
 import com.jayjd.boxtop.receiver.UsbBroadcastReceiver;
+import com.jayjd.boxtop.settings.SettingsActivity;
 import com.jayjd.boxtop.utils.AppsUtils;
 import com.jayjd.boxtop.utils.BlurCompat;
 import com.jayjd.boxtop.utils.DotContainerUtils;
@@ -438,9 +440,7 @@ public class MainActivity extends AppCompatActivity {
             } else if (item == TopSettingsIcons.FLASH_DRIVE_ICON) {
                 ToolUtils.openSystemFileManager(this);
             } else if (item == TopSettingsIcons.SETTINGS_ICON) {
-                Intent intent = new Intent(Settings.ACTION_SETTINGS);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
+                ActivityUtils.startActivity(SettingsActivity.class);
             } else if (item == TopSettingsIcons.BLUETOOTH_ICON) {
                 Intent intent = new Intent(Settings.ACTION_BLUETOOTH_SETTINGS);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
