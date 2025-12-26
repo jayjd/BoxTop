@@ -420,6 +420,13 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     private void initListener() {
+        tvHomeTime.setOnKeyListener((v, keyCode, event) -> {
+            if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN && event.getAction() == KeyEvent.ACTION_DOWN) {
+                favoriteAppsGrid.requestFocus();
+                return true;
+            }
+            return false;
+        });
         tvHomeTime.setOnClickListener(v -> {
             try {
                 Intent intent = new Intent(Settings.ACTION_DATE_SETTINGS);
@@ -427,9 +434,13 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             } catch (Exception e) {
                 // 兜底：打开设置首页
-                Intent intent = new Intent(Settings.ACTION_SETTINGS);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
+                try {
+                    Intent intent = new Intent(Settings.ACTION_SETTINGS);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                } catch (Exception ex) {
+                    Log.e(TAG, "openSettings: ", ex);
+                }
             }
         });
 
