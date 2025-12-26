@@ -1,6 +1,9 @@
+import com.github.megatronking.stringfog.plugin.StringFogExtension
 plugins {
     alias(libs.plugins.android.application)
+    id("stringfog")
 }
+apply(plugin = "stringfog")
 
 android {
     namespace = "com.jayjd.boxtop"
@@ -20,7 +23,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -39,6 +43,17 @@ android {
     }
 }
 
+configure<StringFogExtension> {
+    // 必要：加解密库的实现类路径，需和上面配置的加解密算法库一致。
+    implementation = "com.github.megatronking.stringfog.xor.StringFogImpl"
+    // 可选：加密开关，默认开启。
+    enable = true
+    // 可选：指定需加密的代码包路径，可配置多个，未指定将默认全部加密。
+    fogPackages = arrayOf("com.jayjd.boxtop")
+    kg = com.github.megatronking.stringfog.plugin.kg.RandomKeyGenerator()
+    // base64或者bytes
+    mode = com.github.megatronking.stringfog.plugin.StringFogMode.bytes
+}
 dependencies {
     implementation(libs.utilcodex)
     implementation(libs.tv.recyclerview)
@@ -85,4 +100,6 @@ dependencies {
     implementation("androidx.room:room-runtime:2.8.4")
     //noinspection UseTomlInstead
     annotationProcessor("androidx.room:room-compiler:2.8.4")
+
+    implementation("com.github.megatronking.stringfog:xor:5.0.0")
 }
