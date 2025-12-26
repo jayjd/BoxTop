@@ -1,21 +1,20 @@
 package com.jayjd.boxtop.utils;
 
 import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
 
 public class App {
-    // 是否付费
-    public static boolean isPaid() {
-        return PurchaseManager.getInstance().isPro();
+
+    public static void startActivity(Context context, String action) {
+        try {
+            Intent intent = new Intent(action);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
+        } catch (Exception e) {
+            Log.e("TAG", "startActivity: ", e);
+        }
     }
 
-
-    // 是否显示软件的名称
-    public static boolean isShowAppName(Context context) {
-        return (boolean) SPUtils.get(context, "is_show_app_name", false);
-    }
-
-    public static void setShowAppName(Context context, boolean isShow) {
-        SPUtils.put(context, "is_show_app_name", isShow);
-    }
 
 }

@@ -41,7 +41,6 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.blankj.utilcode.util.ActivityUtils;
 import com.blankj.utilcode.util.AppUtils;
 import com.blankj.utilcode.util.PermissionUtils;
 import com.blankj.utilcode.util.ResourceUtils;
@@ -75,7 +74,7 @@ import com.jayjd.boxtop.listeners.UsbDriveListener;
 import com.jayjd.boxtop.listeners.ViewAnimationShake;
 import com.jayjd.boxtop.listeners.ViewFocusListener;
 import com.jayjd.boxtop.receiver.UsbBroadcastReceiver;
-import com.jayjd.boxtop.settings.SettingsActivity;
+import com.jayjd.boxtop.utils.App;
 import com.jayjd.boxtop.utils.AppsUtils;
 import com.jayjd.boxtop.utils.BetaValidator;
 import com.jayjd.boxtop.utils.BlurCompat;
@@ -458,23 +457,18 @@ public class MainActivity extends AppCompatActivity {
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent);
                     } catch (Exception e1) {
-                        intent = new Intent(Settings.ACTION_SETTINGS);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
+                        App.startActivity(this, Settings.ACTION_SETTINGS);
                     }
                 }
             } else if (item == TopSettingsIcons.FLASH_DRIVE_ICON) {
                 ToolUtils.openSystemFileManager(this);
             } else if (item == TopSettingsIcons.SETTINGS_ICON) {
-                ActivityUtils.startActivity(SettingsActivity.class);
+                App.startActivity(this, Settings.ACTION_SETTINGS);
+//                ActivityUtils.startActivity(SettingsActivity.class);
             } else if (item == TopSettingsIcons.BLUETOOTH_ICON) {
-                Intent intent = new Intent(Settings.ACTION_BLUETOOTH_SETTINGS);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
+                App.startActivity(this, Settings.ACTION_BLUETOOTH_SETTINGS);
             } else if (item == TopSettingsIcons.APPS_ICON) {
-                Intent intent = new Intent(Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
+                App.startActivity(this, Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS);
             }
         });
         appListAdapter.setOnItemLongClickListener((parent, view, position) -> {

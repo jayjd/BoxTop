@@ -58,4 +58,9 @@ public class PurchaseManager {
         return false;
     }
 
+    public void lockPro(Context context) {
+        licenseLevel = LicenseLevel.FREE;
+        LicenseStore.save(context, LicenseLevel.FREE);
+        LicenseEvent.notifyChanged(context);
+    }
 }

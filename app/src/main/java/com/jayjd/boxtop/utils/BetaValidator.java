@@ -78,8 +78,11 @@ public final class BetaValidator {
                     betaStateListener.onBetaStateChanged(deviceAllowed);
                     if (deviceAllowed) {
                         stopServer();
+                        // TODO: 2025/12/26 這是只是内测版 后续版本记得移除
+                        PurchaseManager.getInstance().unlockWithCode(context, "BOXTOP-PRO-2025");
                         Toast.makeText(context, "欢迎加入内测", Toast.LENGTH_SHORT).show();
                     } else {
+                        PurchaseManager.getInstance().lockPro(context);
                         showFailDialog(deviceId, betaConfig);
                     }
                 }
