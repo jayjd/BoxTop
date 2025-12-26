@@ -43,7 +43,6 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.blankj.utilcode.util.ActivityUtils;
 import com.blankj.utilcode.util.AppUtils;
-import com.blankj.utilcode.util.NetworkUtils;
 import com.blankj.utilcode.util.PermissionUtils;
 import com.blankj.utilcode.util.ResourceUtils;
 import com.blankj.utilcode.util.ScreenUtils;
@@ -85,6 +84,7 @@ import com.jayjd.boxtop.utils.PrivacyPasswordManager;
 import com.jayjd.boxtop.utils.ProDialog;
 import com.jayjd.boxtop.utils.PurchaseManager;
 import com.jayjd.boxtop.utils.ToolUtils;
+import com.jayjd.boxtop.utils.TvTimeHelper;
 import com.jayjd.boxtop.utils.cpu.CpuMonitor;
 import com.jayjd.boxtop.wallpaper.WallpaperActivity;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
@@ -124,7 +124,42 @@ public class MainActivity extends AppCompatActivity {
     ImageView wallPager;
     ViewPager2 viewPagerCards;
     CpuMonitor cpuMonitor;
+    TextView tvHomeTime;
+    private TvTimeHelper timeHelper = new TvTimeHelper();
 
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
+    @RequiresApi(api = Build.VERSION_CODES.S)
+    @Override
+    protected void onStart() {
+        super.onStart();
+        initDeviceState();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_MEDIA_MOUNTED);    // 插入
+        filter.addAction(Intent.ACTION_MEDIA_UNMOUNTED);  // 拔出
+        filter.addAction(Intent.ACTION_MEDIA_REMOVED);    // 拔出
+        filter.addAction(Intent.ACTION_MEDIA_EJECT);      // 弹出
+
+        filter.addAction(LicenseEvent.ACTION_PRO_UNLOCKED); // 会员解锁
+
+        filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED); // 蓝牙连接
+        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED); // 蓝牙断开
+
+        filter.addAction(Intent.ACTION_PACKAGE_ADDED);
+        filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
+        filter.addAction(Intent.ACTION_PACKAGE_REPLACED);
+        filter.addDataScheme("package");
+
+        filter.addDataScheme("file");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(usbReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(usbReceiver, filter);
+        }
+        timeHelper.start(time -> {
+            tvHomeTime.setText(time);
+        });
+
+    }
 
     @Override
     protected void onResume() {
@@ -136,6 +171,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
 
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        timeHelper.stop();
     }
 
     private final Executor dbExecutor = Executors.newSingleThreadExecutor();
@@ -244,35 +285,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @SuppressLint("UnspecifiedRegisterReceiverFlag")
-    @RequiresApi(api = Build.VERSION_CODES.S)
-    @Override
-    protected void onStart() {
-        super.onStart();
-        initDeviceState();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_MEDIA_MOUNTED);    // 插入
-        filter.addAction(Intent.ACTION_MEDIA_UNMOUNTED);  // 拔出
-        filter.addAction(Intent.ACTION_MEDIA_REMOVED);    // 拔出
-        filter.addAction(Intent.ACTION_MEDIA_EJECT);      // 弹出
-
-        filter.addAction(LicenseEvent.ACTION_PRO_UNLOCKED); // 会员解锁
-
-        filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED); // 蓝牙连接
-        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED); // 蓝牙断开
-
-        filter.addAction(Intent.ACTION_PACKAGE_ADDED);
-        filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
-        filter.addAction(Intent.ACTION_PACKAGE_REPLACED);
-        filter.addDataScheme("package");
-
-        filter.addDataScheme("file");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(usbReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
-        } else {
-            registerReceiver(usbReceiver, filter);
-        }
-    }
 
     @SuppressLint("NotifyDataSetChanged")
     private void showTopIcon(TopSettingsIcons icon) {
@@ -439,10 +451,38 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     private void initListener() {
+        tvHomeTime.setOnClickListener(v -> {
+            try {
+                Intent intent = new Intent(Settings.ACTION_DATE_SETTINGS);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            } catch (Exception e) {
+                // 兜底：打开设置首页
+                Intent intent = new Intent(Settings.ACTION_SETTINGS);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        });
+
         topSettingsAdapter.setOnItemClickListener((baseQuickAdapter, view, i) -> {
             TopSettingsIcons item = baseQuickAdapter.getItem(i);
             if (item == TopSettingsIcons.WIFI_ICON || item == TopSettingsIcons.ETHERNET_ICON) {
-                NetworkUtils.openWirelessSettings();
+                Intent intent;
+                try {
+                    intent = new Intent(Settings.ACTION_WIRELESS_SETTINGS);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                } catch (Exception e) {
+                    try {
+                        intent = new Intent(Settings.ACTION_WIFI_SETTINGS);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                    } catch (Exception e1) {
+                        intent = new Intent(Settings.ACTION_SETTINGS);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                    }
+                }
             } else if (item == TopSettingsIcons.FLASH_DRIVE_ICON) {
                 ToolUtils.openSystemFileManager(this);
             } else if (item == TopSettingsIcons.SETTINGS_ICON) {
@@ -596,6 +636,7 @@ public class MainActivity extends AppCompatActivity {
         viewPagerCards = findViewById(R.id.view_pager_cards);
         LinearLayout dotContainer = findViewById(R.id.dot_container);
         viewPagerContainer = findViewById(R.id.view_pager_container);
+        tvHomeTime = findViewById(R.id.tv_home_time);
         List<Fragment> fragments = getFragments();
         DotContainerUtils.bindViewPager(viewPagerCards, dotContainer, fragments.size());
         InfoCardPagerAdapter infoCardPagerAdapter = new InfoCardPagerAdapter(this, fragments);
@@ -662,6 +703,9 @@ public class MainActivity extends AppCompatActivity {
             public boolean onInBorderKeyEvent(int direction, View focused) {
                 if (direction == View.FOCUS_DOWN) {
                     viewPagerContainer.requestFocus();
+                    return true;
+                } else if (direction == View.FOCUS_LEFT) {
+                    tvHomeTime.requestFocus();
                     return true;
                 }
                 return super.onInBorderKeyEvent(direction, focused);
@@ -1090,8 +1134,10 @@ public class MainActivity extends AppCompatActivity {
         if (keyCode == KeyEvent.KEYCODE_MENU) {
             showSettings();
             return true;
+        } else if (keyCode == KeyEvent.KEYCODE_BACK) {
+            Log.d(TAG, "onKeyDown: 直接拦截不能退出");
+            return true;
         }
-
         return super.onKeyDown(keyCode, event);
     }
 

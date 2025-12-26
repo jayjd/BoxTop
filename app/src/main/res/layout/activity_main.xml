@@ -74,6 +74,25 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
+            <TextView
+                android:id="@+id/tv_home_time"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/tv_selector"
+                android:clickable="true"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:gravity="center"
+                android:text="11:11"
+                android:textColor="#ffffff"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/top_settings_lists"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintWidth_percent=".1" />
+
             <com.owen.tvrecyclerview.widget.TvRecyclerView
                 android:id="@+id/top_settings_lists"
                 android:layout_width="wrap_content"
@@ -86,7 +105,6 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="1"
-                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:tv_horizontalSpacingWithMargins="8dp"
                 app:tv_verticalSpacingWithMargins="8dp"
