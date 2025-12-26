@@ -69,6 +69,7 @@ import com.jayjd.boxtop.entity.AppInfo;
 import com.jayjd.boxtop.entity.FavoriteApp;
 import com.jayjd.boxtop.enums.PreviewSettings;
 import com.jayjd.boxtop.enums.TopSettingsIcons;
+import com.jayjd.boxtop.listeners.BetaStateListener;
 import com.jayjd.boxtop.listeners.TvOnItemListener;
 import com.jayjd.boxtop.listeners.UsbDriveListener;
 import com.jayjd.boxtop.listeners.ViewAnimationShake;
@@ -659,6 +660,7 @@ public class MainActivity extends AppCompatActivity {
         topSettingsBar = findViewById(R.id.top_settings_lists);
         // 常用的软件
         favoriteAppsContainer = findViewById(R.id.favorite_apps_container);
+        favoriteAppsContainer.setVisibility(View.INVISIBLE);
         favoriteAppsGrid = findViewById(R.id.favorite_apps_grid);
         // 所有软件的布局和列表
         allAppsContainer = findViewById(R.id.all_apps_container);
@@ -993,7 +995,21 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         initDeviceState();
-        betaValidator.getBaseConfigData();
+        betaValidator.getBaseConfigData(new BetaStateListener() {
+            @Override
+            public void onBetaStateChanged(boolean isBeta) {
+                if (isBeta) {
+                    favoriteAppsContainer.setVisibility(View.VISIBLE);
+                } else {
+                    favoriteAppsContainer.setVisibility(View.INVISIBLE);
+                }
+            }
+
+            @Override
+            public void onExitApp() {
+                finish();
+            }
+        });
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_MEDIA_MOUNTED);    // 插入
         filter.addAction(Intent.ACTION_MEDIA_UNMOUNTED);  // 拔出

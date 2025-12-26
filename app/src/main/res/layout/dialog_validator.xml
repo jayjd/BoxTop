@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/dialog_root"
-    android:layout_width="400dp"
+    android:layout_width="420dp"
     android:layout_height="wrap_content"
     android:background="@drawable/dialog_bg_premium"
     android:orientation="vertical"
@@ -14,73 +14,140 @@
         android:layout_height="wrap_content"
         android:text="内测授权"
         android:textColor="@android:color/white"
-        android:textSize="20sp"
+        android:textSize="22sp"
         android:textStyle="bold" />
 
-    <!-- 提示文字 -->
+    <!-- 授权说明 -->
     <TextView
-        android:id="@+id/tv_message"
+        android:id="@+id/tv_guide"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:text="请联系开发者"
-        android:textColor="@android:color/white"
-        android:textSize="16sp" />
+        android:layout_marginTop="10dp"
+        android:text="请在手机或电脑打开授权页面，复制设备码完成内测授权"
+        android:textColor="#CCFFFFFF"
+        android:textSize="15sp" />
 
-    <!-- 设备ID -->
-    <TextView
-        android:id="@+id/tv_device_id"
+    <!-- 设备码区域（重点） -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:ellipsize="middle"
-        android:scrollHorizontally="true"
-        android:singleLine="true"
-        android:text="设备ID: 744D67E892A761452C94A45C57EFE07A74067A6ADAC3DE09A4AFF56A1AAB2460"
-        android:textColor="@android:color/white"
-        android:textSize="14sp" />
+        android:layout_marginTop="16dp"
+        android:background="@drawable/bg_blur_card"
+        android:orientation="vertical"
+        android:padding="12dp">
 
-    <!-- 内测结束时间 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="设备码"
+            android:textColor="#99FFFFFF"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tv_device_id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/dialog_btn_confirm_selector"
+            android:clickable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:padding="10dp"
+            android:text="744D67E892A761452C94A45C57EFE07A74067A6ADAC3DE09A4AFF56A1AAB2460"
+            android:textColor="@android:color/white"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <!-- 授权方式 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:text="授权方式"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <!-- 地址 -->
+        <TextView
+            android:id="@+id/tv_http"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/bg_blur_card"
+            android:padding="10dp"
+            android:text="http://192.168.0.10:8585"
+            android:textAlignment="center"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!-- 二维码 -->
+        <ImageView
+            android:id="@+id/address_image"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:layout_marginStart="12dp"
+            android:contentDescription="扫码授权"
+            android:src="@drawable/ic_launcher_background" />
+    </LinearLayout>
+
+    <!-- 内测到期 -->
     <TextView
         android:id="@+id/tv_expire_time"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:text="内测结束时间：2026-01-04 00:00:00"
-        android:textColor="@android:color/white"
-        android:textSize="14sp" />
+        android:text="内测有效期至：2026-01-04"
+        android:textColor="#88FFFFFF"
+        android:textSize="13sp" />
 
-    <TextView
-        android:id="@+id/tv_http"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:text="http://192.168.0.10:8585"
-        android:textColor="@android:color/white"
-        android:textSize="14sp" />
+        android:layout_marginTop="18dp"
+        android:gravity="center"
+        android:orientation="horizontal">
 
-    <ImageView
-        android:id="@+id/address_image"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_marginTop="12dp"
-        android:src="@drawable/ic_launcher_background" />
 
-    <!-- 右下刷新按钮 -->
-    <TextView
-        android:id="@+id/tv_refresh_status"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/dialog_btn_confirm_selector"
-        android:clickable="true"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="8dp"
-        android:text="刷新状态"
-        android:textColor="@android:color/white"
-        android:textSize="14sp" />
+        <!-- 操作按钮 -->
+        <TextView
+            android:id="@+id/tv_refresh_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/dialog_btn_confirm_selector"
+            android:clickable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="10dp"
+            android:text="刷新授权状态"
+            android:textColor="@android:color/white"
+            android:textSize="14sp" />
+
+        <!-- 操作按钮 -->
+        <TextView
+            android:id="@+id/tv_exit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/dialog_btn_confirm_selector"
+            android:clickable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="10dp"
+            android:text="退出应用"
+            android:textColor="@android:color/white"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+
 
 </LinearLayout>

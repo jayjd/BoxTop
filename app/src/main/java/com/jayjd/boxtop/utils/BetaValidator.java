@@ -18,6 +18,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.Gson;
 import com.jayjd.boxtop.R;
 import com.jayjd.boxtop.entity.BetaConfig;
+import com.jayjd.boxtop.listeners.BetaStateListener;
 import com.jayjd.boxtop.nanohttpd.ControlManager;
 import com.jayjd.boxtop.nanohttpd.QRCodeGen;
 import com.jayjd.boxtop.nanohttpd.interfas.BaseDataReceiver;
@@ -34,41 +35,15 @@ import java.util.List;
 public final class BetaValidator {
     private static Dialog dialog;
     private final Context context;
-
+    private BetaStateListener betaStateListener;
 
     public BetaValidator(Context context) {
         this.context = context;
     }
 
-    public void getBaseConfigData() {
-//        https://bitbucket.org/hyyyyy/hy/raw/master/beta.json
-        OkGo.<String>get("https://gitee.com/jayjd/boxtop/releases/download/0.0.1/beta.json").execute(new StringCallback() {
-            @Override
-            public void onSuccess(Response<String> response) {
-                if (response.isSuccessful()) {
-                    String body = response.body();
-                    if (body == null) {
-                        return;
-                    }
-                    BetaConfig betaConfig = new Gson().fromJson(body, BetaConfig.class);
-                    String deviceId = DeviceFingerprintUtil.getDeviceFingerprint(context).toUpperCase();
-                    SPUtils.put(context, "deviceId", deviceId);
-                    boolean deviceAllowed = isDeviceAllowed(context, betaConfig);
-                    if (deviceAllowed) {
-                        stopServer();
-                        Toast.makeText(context, "欢迎加入内测", Toast.LENGTH_SHORT).show();
-                    } else {
-                        showFailDialog(deviceId, betaConfig);
-                    }
-                }
-            }
-
-            @Override
-            public void onError(Response<String> response) {
-                super.onError(response);
-                new MaterialAlertDialogBuilder(context, R.style.ProDialogTheme).setTitle("验证异常").setMessage(response.getException().getMessage()).setCancelable(false).show();
-            }
-        });
+    private static boolean isExpireAt(BetaConfig config) {
+        long eat = TimeUtils.string2Millis(config.getExpire_at());
+        return System.currentTimeMillis() > eat;
     }
 
     public void startServer() {
@@ -82,6 +57,43 @@ public final class BetaValidator {
         ControlManager.get().stopServer();
     }
 
+    public void getBaseConfigData(BetaStateListener betaStateListener) {
+        this.betaStateListener = betaStateListener;
+//        https://bitbucket.org/hyyyyy/hy/raw/master/beta.json
+//        https://gitee.com/jayjd/boxtop/releases/download/0.0.1/beta.json
+//        https://gh.xxooo.cf/https://raw.githubusercontent.com/jayjd/jayjd.github.io/refs/heads/main/hy/beta.json
+        OkGo.<String>get("https://gitee.com/jayjd/boxtop/releases/download/0.0.1/beta.json").execute(new StringCallback() {
+            @Override
+            public void onSuccess(Response<String> response) {
+                if (response.isSuccessful()) {
+                    String body = response.body();
+                    if (body == null) {
+                        return;
+                    }
+                    BetaConfig betaConfig = new Gson().fromJson(body, BetaConfig.class);
+                    String deviceId = DeviceFingerprintUtil.getDeviceFingerprint(context).toUpperCase();
+                    SPUtils.put(context, "deviceId", deviceId);
+                    boolean deviceAllowed = isDeviceAllowed(context, betaConfig);
+                    betaStateListener.onBetaStateChanged(deviceAllowed);
+                    if (deviceAllowed) {
+                        stopServer();
+                        Toast.makeText(context, "欢迎加入内测", Toast.LENGTH_SHORT).show();
+                    } else {
+                        showFailDialog(deviceId, betaConfig);
+                    }
+                }
+            }
+
+            @Override
+            public void onError(Response<String> response) {
+                super.onError(response);
+                new MaterialAlertDialogBuilder(context, R.style.ProDialogTheme).setTitle("验证异常").setMessage(response.getException().getMessage())
+                        .setNegativeButton("退出", (dialog, which) -> betaStateListener.onExitApp())
+                        .setCancelable(false).show();
+            }
+        });
+    }
+
     @SuppressLint("SetTextI18n")
     private void showFailDialog(String deviceId, BetaConfig betaConfig) {
         if (dialog == null) {
@@ -93,10 +105,14 @@ public final class BetaValidator {
             ImageView addressImage = inflate.findViewById(R.id.address_image);
 
             TextView tvRefreshStatus = inflate.findViewById(R.id.tv_refresh_status);
-            tvRefreshStatus.setOnClickListener(v -> getBaseConfigData());
-
+            TextView tvExit = inflate.findViewById(R.id.tv_exit);
+            tvRefreshStatus.setOnClickListener(v -> getBaseConfigData(betaStateListener));
+            tvExit.setOnClickListener(v -> {
+                stopServer();
+                betaStateListener.onExitApp();
+            });
             tvDeviceId.setText(deviceId);
-            tvExpireTime.setText("内测结束时间：" + betaConfig.getExpire_at());
+            tvExpireTime.setText("内测结束时间：" + (isExpireAt(betaConfig) ? "内测已结束！" : betaConfig.getExpire_at()));
             String address = ControlManager.get().getAddress(false);
             Bitmap bitmap = QRCodeGen.generateBitmap(address, 80, 80, 0, Color.WHITE, Color.TRANSPARENT);
             tvHttp.setText(address);
@@ -106,7 +122,8 @@ public final class BetaValidator {
             dialog.setCancelable(false);
             dialog.show();
         } else {
-            Toast.makeText(context, "未获得授权，请联系开发者！", Toast.LENGTH_SHORT).show();
+            String msg = isExpireAt(betaConfig) ? "内测已结束！" : "未获得授权，请联系开发者！";
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -124,8 +141,7 @@ public final class BetaValidator {
         if (!config.isBeta_enabled()) return false;
 
         // 2️⃣ 内测过期
-        long eat = TimeUtils.string2Millis(config.getExpire_at());
-        if (System.currentTimeMillis() > eat) return false;
+        if (isExpireAt(config)) return false;
 
         // 3️⃣ 生成设备指纹
         String deviceId = DeviceFingerprintUtil.getDeviceFingerprint(context).toUpperCase();
