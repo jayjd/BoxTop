@@ -125,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
     ViewPager2 viewPagerCards;
     CpuMonitor cpuMonitor;
     TextView tvHomeTime;
-    private TvTimeHelper timeHelper = new TvTimeHelper();
+    private TvTimeHelper timeHelper ;
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     @RequiresApi(api = Build.VERSION_CODES.S)
@@ -631,6 +631,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initView() {
+        timeHelper = new TvTimeHelper(this);
         wallPager = findViewById(R.id.wall_pager);
         // 功能区域
         viewPagerCards = findViewById(R.id.view_pager_cards);
