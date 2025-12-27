@@ -44,7 +44,6 @@ android {
 }
 
 configure<StringFogExtension> {
-
     implementation = "com.jayjd.stringfogcustom.AdvanceStringFogImpl"
     // 可选：加密开关，默认开启。
     enable = true
@@ -74,7 +73,7 @@ dependencies {
     implementation("com.lzy.net:okgo:3.0.4")
 
     implementation("androidx.palette:palette:1.0.0")
-    //noinspection UseTomlInstead
+    //noinspection NewerVersionAvailable,UseTomlInstead
     implementation("com.google.guava:guava:33.3.1-android")
     // https://mvnrepository.com/artifact/com.google.code.gson/gson
     //noinspection UseTomlInstead
@@ -84,24 +83,29 @@ dependencies {
     implementation("org.projectlombok:lombok:1.18.42")
     //noinspection UseTomlInstead
     annotationProcessor("org.projectlombok:lombok:1.18.42")
-    //noinspection UseTomlInstead 不支持7.0以下
+    //noinspection NewerVersionAvailable,UseTomlInstead 不支持7.0以下
     implementation("com.github.bumptech.glide:glide:4.16.0")
-    //noinspection UseTomlInstead
+    //noinspection NewerVersionAvailable,UseTomlInstead
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
     //noinspection
     implementation("com.github.bumptech.glide:okhttp3-integration:4.16.0") {
         exclude("com.android.support")
     }
+    //noinspection UseTomlInstead
     implementation("org.nanohttpd:nanohttpd:2.3.1")
 //局域网http服务器搭建库
+    //noinspection UseTomlInstead
     implementation("org.nanohttpd:nanohttpd-websocket:2.3.1")
 //局域网http服务器搭建库
+    //noinspection UseTomlInstead
     implementation("com.google.zxing:core:3.5.4")
 //字符串生成二维码库
     //noinspection UseTomlInstead
     implementation("androidx.room:room-runtime:2.8.4")
     //noinspection UseTomlInstead
     annotationProcessor("androidx.room:room-compiler:2.8.4")
-
+    //noinspection UseTomlInstead
     implementation("com.github.megatronking.stringfog:interface:5.0.0")
+    implementation(project(":StringFogCustom"))
+
 }

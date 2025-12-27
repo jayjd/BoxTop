@@ -33,4 +33,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "BoxTop"
 include(":app")
- 
+include(":StringFogCustom")
