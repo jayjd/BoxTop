@@ -43,15 +43,7 @@
 -keep class com.jayjd.boxtop.cards.entity.** { *; }
 
 # 保留 StringFog 实现类及接口方法
--keep class com.jayjd.boxtop.utils.AdvanceStringFogImpl {
-    <init>();
-    public byte[] encrypt(java.lang.String, byte[]);
-    public java.lang.String decrypt(byte[], byte[]);
-    public boolean shouldFog(java.lang.String);
-}
-
-# 保留接口
--keep interface com.github.megatronking.stringfog.IStringFog
+-keep class com.jayjd.stringfogcustom.AdvanceStringFogImpl { *; }
 
 ########################################
 # 3️⃣ Android TV / AppCompat / Material

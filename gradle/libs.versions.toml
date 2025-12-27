@@ -27,4 +27,5 @@ utilcodex = { module = "com.blankj:utilcodex", version.ref = "utilcodex" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
 
