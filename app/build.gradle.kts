@@ -1,10 +1,24 @@
 import com.github.megatronking.stringfog.plugin.StringFogExtension
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
 plugins {
     alias(libs.plugins.android.application)
     id("stringfog")
 }
 apply(plugin = "stringfog")
 
+android.applicationVariants.all {
+    outputs.all {
+        if (this is com.android.build.gradle.internal.api.ApkVariantOutputImpl) {
+            val config = project.android.defaultConfig
+            val versionName = config.versionName
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmm")
+            val createTime = LocalDateTime.now().format(formatter)
+            this.outputFileName = "${project.name}_${this.name}_${versionName}_$createTime.apk"
+        }
+    }
+}
 android {
     namespace = "com.jayjd.boxtop"
     compileSdk {
@@ -16,7 +30,7 @@ android {
         minSdk = 23
         targetSdk = 36
         versionCode = 1
-        versionName = "1.0"
+        versionName = "0.0.1"
         multiDexEnabled = true
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

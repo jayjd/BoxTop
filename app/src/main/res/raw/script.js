@@ -30,11 +30,20 @@ function onBetaPer(){
     .then(data => {
         // 创建可点击复制的元素
         const dataDiv = document.getElementById("betaData");
-        dataDiv.innerHTML = `
-            <div class="weui-cell input-field" style="word-break: break-all; white-space: normal;" onclick="copyToClipboard('${data}')">
-                ${data} （点击复制）
-            </div>
-        `;
+        dataDiv.innerHTML = ""; // 清空旧内容
+
+        const copyDiv = document.createElement("div");
+        copyDiv.className = "weui-cell input-field";
+        copyDiv.style.wordBreak = "break-all";
+        copyDiv.style.whiteSpace = "normal";
+        copyDiv.textContent = `${data} （点击复制）`;
+
+        copyDiv.addEventListener("click", () => {
+            console.log(data);
+            copyToClipboard(data);
+        });
+
+        dataDiv.appendChild(copyDiv);
         console.log(data);
     })
     .catch(err => {
@@ -45,6 +54,10 @@ function onBetaPer(){
 }
 function copyToClipboard(text) {
     // 使用 Clipboard API 复制文本
+    if(!navigator.clipboard){
+        alert("浏览器不支持 Clipboard API");
+        return;
+    }
     navigator.clipboard.writeText(text).then(() => {
         alert("已复制到剪贴板,将设备码发送给开发者进行授权！");
     }).catch(err => {
